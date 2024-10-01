@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9fafc; // Light blue background
+  }
+  
+  // Navigation bar styles
+  
+  .main-nav {
+    position: sticky;
+    top: 0;
+    background-color: #4CAF50; // Green navigation bar
+    padding: 1rem;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+  
+  .nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+  
+  .nav-item {
+    display: inline-block;
+    margin-right: 20px;
+  }
+  
+  .nav-link {
+    color: #fff; // White text
+    text-decoration: none;
+    transition: all 0.2s ease; // Add some animation
+  
+    &:hover {
+      color: #666; // Dark gray hover effect
+      transform: translateY(-3px); // Add some depth with a translation
+    }
+  }
+  
+  // Main content styles
+  
+  .main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: #fff; // White main content area
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); // Add some depth with a shadow
+  
+    @media (max-width: 768px) {
+      padding: 1rem;
+    }
+  }
+  
+  // Footer styles
+  
+  .site-footer {
+    background-color: #4CAF50; // Green footer
+    padding: 1rem;
+    text-align: center;
+    color: #fff; // White text
+  
+    @media (max-width: 768px) {
+      padding: 0.5rem;
+    }
+  }

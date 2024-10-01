@@ -1,0 +1,37 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaLogix</title>
+    <link rel="stylesheet" href="{% static 'base/css/base.css' %}">
+</head>
+<body>
+    <nav class="main-nav">
+        <ul class="nav-list">
+            {% if user.is_authenticated %}
+                <li class="nav-item"><a href="" class="nav-link">Meds</a></li>
+                <li class="nav-item"><a href="" class="nav-link">Scan Medications</a></li>
+                <li class="nav-item"><a href="" class="nav-link">Logout</a></li>
+            {% else %}
+                <li class="nav-item"><a href="" class="nav-link">Login</a></li>
+                <li class="nav-item"><a href="" class="nav-link">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <main id="content" class="main-content">
+        {% block content %}
+            
+        {% endblock %}
+    </main>
+
+    <footer id="footer" class="site-footer">
+        &copy; 2024 PharmaLogix
+    </footer>
+
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>
