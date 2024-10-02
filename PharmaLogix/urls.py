@@ -21,4 +21,5 @@ from django.conf import settings
 urlpatterns = [
     path(settings.ADMIN_PAGE_URL, admin.site.urls),
     path('',include('users.urls')),
+    path('',include('core.urls')),
 ]
