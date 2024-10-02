@@ -1,0 +1,121 @@
+$primary-color: #3b8b4e;  // Change to your specific shade for primary action
+$secondary-color: rgb(36, 36, 36);  // Darker shade for secondary elements
+$text-color: #fff;  // White text color for buttons
+$border-radius: 5px;
+$box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+.form-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #fff;  // Keeping the form white for readability
+    border-radius: $border-radius;
+    box-shadow: $box-shadow;
+    color: #333;
+    font-family: Arial, sans-serif;
+
+    h2 {
+        color: $primary-color;  // Use primary color for the heading
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: darken(#333, 20%);  // Slightly darker label color
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="password"],
+        input[type="date"],
+        input[type="file"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: $border-radius;
+            border: 1px solid #ccc;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            background-color: #f9f9f9;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+
+            &:focus {
+                border-color: $primary-color;  // Primary color on focus
+                outline: none;
+            }
+        }
+        
+        .form-error {
+            color: #e74c3c;  // Red for errors
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    }
+
+    .form-actions {
+        text-align: center;
+        margin-top: 20px;
+
+        .btn-submit {
+            background-color: $primary-color;  // Primary color for submit button
+            border: none;
+            color: $text-color;  // White text on button
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: $border-radius;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+                background-color: darken($primary-color, 10%);  // Darker shade on hover
+            }
+        }
+
+        .btn-reset {
+            background-color: lighten($secondary-color, 20%);  // Lighter secondary color for reset
+            border: none;
+            color: $text-color;  // White text on button
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: $border-radius;
+            transition: background-color 0.3s ease;
+            margin-left: 10px;
+
+            &:hover {
+                background-color: darken($secondary-color, 10%);  // Darker shade on hover
+            }
+        }
+    }
+
+    // Responsive adjustments
+    @media (max-width: 768px) {
+        padding: 15px;
+
+        .form-group {
+            input,
+            select,
+            textarea {
+                font-size: 14px;
+                padding: 8px;
+            }
+        }
+
+        .form-actions {
+            .btn-submit,
+            .btn-reset {
+                font-size: 14px;
+                padding: 8px 15px;
+            }
+        }
+    }
+}
