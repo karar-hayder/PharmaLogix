@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'core/css/home.css' %}">
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <h2>My Pharmacies</h2>
+    <div class="pharmacy-list">
+        {% if pharmacies %}
+            <div class="pharmacy-cards">
+                {% for pharmacy in pharmacies %}
+                    <div class="pharmacy-card">
+                        <h3 class="pharmacy-name">{{ pharmacy.name }}</h3>
+                        <p><strong>Owner:</strong> {{ pharmacy.owner.username }}</p>
+                        <a class="btn-detail" href="">Work</a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>You are not assigned to any pharmacies at the moment.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
