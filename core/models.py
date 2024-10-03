@@ -51,7 +51,7 @@ class Product(models.Model):
     pharmacy = models.ForeignKey(Pharmacy,on_delete=models.CASCADE)
     medication = models.ForeignKey(Medication, on_delete=models.CASCADE)
     barcode = models.CharField(max_length=100, unique=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.PositiveBigIntegerField()
     expiration_date = models.DateField()
     stock_level = models.PositiveIntegerField()
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
@@ -73,7 +73,7 @@ class Sale(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     total_amount = models.PositiveIntegerField()
     discount = models.PositiveIntegerField()
-    
+    payment_received  = models.PositiveIntegerField()
 
     def __str__(self):
         return f"Sale #{self.id} - {self.total_amount} by {self.cashier.username} at {self.created_at.strftime('%d/%m/%Y, %H:%M:%S')}"

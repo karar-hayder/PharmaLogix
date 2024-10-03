@@ -15,7 +15,7 @@
                     <div class="pharmacy-card">
                         <h3 class="pharmacy-name">{{ pharmacy.name }}</h3>
                         <p><strong>Owner:</strong> {{ pharmacy.owner.username }}</p>
-                        <a class="btn-detail" href="">Work</a>
+                        <a class="btn-detail" href="{% url "Work" pharmacy.id %}">Work</a>
                     </div>
                 {% endfor %}
             </div>
