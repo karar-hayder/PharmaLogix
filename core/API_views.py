@@ -44,13 +44,16 @@ class CartAPIView(APIView):
         product = get_object_or_404(Product, id=product_id, pharmacy=pharmacy)
         cart = request.session.get('cart', {})
 
+        # Get the quantity from the request data, defaulting to 1 if not provided
+        quantity = int(request.data.get('quantity', 1))
+
         if str(product_id) not in cart:
-            cart[str(product_id)] = {'quantity': 1}
+            cart[str(product_id)] = {'quantity': quantity}
         else:
-            cart[str(product_id)]['quantity'] += 1
+            cart[str(product_id)]['quantity'] += quantity
 
         request.session['cart'] = cart
-        return Response({'message': 'Product added to cart'})
+        return Response({'message': 'Product added to cart', 'cart': cart}, status=status.HTTP_201_CREATED)
 
     # Remove product from cart (optional)
     def delete(self, request, pharmacy_id, product_id):
@@ -80,13 +83,12 @@ class CheckoutAPIView(APIView):
             quantity = item.get('quantity', 1)
             total_price += product.price * quantity
             cart_items.append({'product': product, 'quantity': quantity, 'price': product.price})
+
         total_price -= discount
         if payment_received == 0:
             payment_received = total_price
-        
-        print(payment_received,discount)
+
         if payment_received < total_price:
-            #### Make the dept book
             return Response({'error': 'Insufficient payment'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Save Sale
