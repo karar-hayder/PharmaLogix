@@ -10,10 +10,11 @@ class MedicationSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     medication_name = serializers.CharField(source='medication.name')
     generic_name = serializers.CharField(source='medication.generic_name')
+    manufacturer = serializers.CharField(source='medication.manufacturer')
 
     class Meta:
         model = Product
-        fields = ['id', 'medication_name', 'generic_name', 'price', 'barcode', 'stock_level']
+        fields = ['id', 'medication_name', 'generic_name','manufacturer', 'price', 'barcode', 'stock_level']
 
 class SaleItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer()
