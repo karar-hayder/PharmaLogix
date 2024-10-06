@@ -1,0 +1,360 @@
+// Cashier container with two columns
+.cashier-container {
+    display: flex;
+    gap: 20px; // Space between the two columns
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+    @media (max-width: 1024px) {
+        max-width: 100%;
+        padding: 15px;
+    }
+
+    @media (max-width: 768px) {
+        flex-direction: column; // Stack columns on smaller screens
+        padding: 10px;
+    }
+}
+
+// Left section: Search and results
+.left-section {
+    flex: 1; // Take up equal space
+    padding-right: 20px;
+
+    h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: #3b8b4e;
+    }
+
+    .search-section {
+        input {
+            width: 100%; // Make input responsive
+            max-width: 400px; // Set a reasonable maximum width
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s ease;
+
+            &:focus {
+                border-color: #3b8b4e;
+                outline: none;
+                box-shadow: 0 0 5px rgba(59, 139, 78, 0.3);
+            }
+        }
+
+        .search-results {
+            max-height: 500px; // Allow for more space for search results
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 1rem;
+
+            .search-item {
+                padding: 10px 0;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                justify-content: space-between; // Align items horizontally
+                align-items: center;
+
+                &:last-child {
+                    border-bottom: none;
+                }
+
+                button {
+                    margin-left: 1rem;
+                    background-color: #3b8b4e;
+                    color: #fff;
+                    border: none;
+                    padding: 5px 10px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    transition: background-color 0.3s ease;
+
+                    &:hover {
+                        background-color: #326f3e;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Right section: Cart and payment
+.right-section {
+    flex: 1; // Take up equal space
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem; // Space between the cart and payment sections
+
+    .cart-container {
+        width: 100%; // Make cart container responsive
+        max-width: 400px;
+        background-color: #f9f9f9;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            .item-details {
+                flex-grow: 1; // Allow this div to take remaining space
+                display: flex;
+                justify-content: space-between; // Align details horizontally
+                align-items: center;
+
+                .item-name {
+                    flex: 1;
+                }
+
+                .quantity-input {
+                    width: 50px; // Set a fixed width for the quantity input
+                    padding: 0.25rem;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                    text-align: center;
+                    font-size: 14px;
+
+                    &:focus {
+                        border-color: #3b8b4e;
+                        outline: none;
+                        box-shadow: 0 0 5px rgba(59, 139, 78, 0.3);
+                    }
+                }
+            }
+
+            button {
+                background-color: #e74c3c; // Red for remove button
+                color: #fff;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+
+                &:hover {
+                    background-color: #c0392b;
+                }
+            }
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+
+            span {
+                font-weight: bold;
+                color: #333;
+            }
+        }
+    }
+
+    .payment-section {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #ccc;
+
+        .form-group {
+            margin-bottom: 1rem;
+
+            label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-size: 1rem;
+            }
+
+            input {
+                width: 100%;
+                max-width: 200px; // Set a maximum width for inputs
+                padding: 0.75rem;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                font-size: 1rem;
+                transition: border-color 0.3s ease;
+
+                &:focus {
+                    border-color: #3b8b4e;
+                    outline: none;
+                    box-shadow: 0 0 5px rgba(59, 139, 78, 0.3);
+                }
+            }
+        }
+
+        button {
+            background-color: #3b8b4e;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+                background-color: #326f3e;
+            }
+        }
+
+        #checkout-message {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #2ecc71;
+            margin-top: 1rem;
+            display: none;
+        }
+    }
+}
+
+// Modal Styles
+#modal {
+    display: none; // Initially hidden
+    position: fixed; // Fixed position to cover the viewport
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); // Semi-transparent background
+    z-index: 1000; // Ensure modal is on top of other content
+    justify-content: center; // Center modal horizontally
+    align-items: center; // Center modal vertically
+    display: flex; // Ensure it's a flex container
+
+    // Show modal styles
+    &.show {
+        display: flex; // Show modal when the 'show' class is added
+    }
+
+    .modal-content {
+        background-color: #fff; // White background for the modal
+        border-radius: 10px; // Rounded corners
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); // Subtle shadow for depth
+        padding: 20px;
+        width: 90%; // Default width
+        max-width: 500px; // Maximum width
+        position: relative;
+
+        h2 {
+            margin: 0 0 15px; // Space below the heading
+            color: #3b8b4e; // Primary color for headings
+        }
+
+        #close-modal {
+            position: absolute; // Positioning for close button
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem; // Size of the close icon
+        }
+
+        #product-info-modal {
+            margin-bottom: 20px; // Space below product info
+            font-size: 1rem; // Base font size
+            color: #333; // Dark text color
+        }
+
+        label {
+            display: block; // Block display for label
+            margin-bottom: 5px; // Space below label
+            font-weight: bold; // Make label bold
+        }
+
+        input[type="number"] {
+            width: 80%; // Full width input
+            padding: 10px; // Padding for input
+            border: 1px solid #ccc; // Light gray border
+            border-radius: 5px; // Rounded corners
+            margin-bottom: 15px; // Space below input
+            font-size: 1rem; // Base font size
+            transition: border-color 0.3s; // Smooth border color transition
+
+            &:focus {
+                border-color: #3b8b4e; // Change border color on focus
+                outline: none; // Remove default outline
+                box-shadow: 0 0 5px rgba(59, 139, 78, 0.3); // Shadow effect on focus
+            }
+        }
+
+        button {
+            background-color: #3b8b4e; // Primary button color
+            color: #fff; // White text
+            border: none; // No border
+            padding: 10px 15px; // Padding for button
+            border-radius: 5px; // Rounded corners
+            cursor: pointer; // Pointer cursor on hover
+            transition: background-color 0.3s; // Smooth background color transition
+
+            &:hover {
+                background-color: #326f3e; // Darker shade on hover
+            }
+        }
+    }
+}
+
+
+// Responsive adjustments for smaller screens
+@media (max-width: 768px) {
+    .cashier-container {
+        flex-direction: column;
+        padding: 0; // No padding between sections
+    }
+
+    .left-section, .right-section {
+        padding: 0;
+    }
+
+    .left-section {
+        order: 2; // Move the left-section (search) below the right-section (cashier) on mobile
+    }
+
+    .right-section {
+        order: 1; // Ensure right-section appears above the left-section
+    }
+
+    .search-section input,
+    .cart-container,
+    .payment-section input {
+        width: 100%; // Ensure fields take full width
+    }
+
+    .right-section {
+        .cart-container, .payment-section {
+            max-width: none; // Remove fixed max-width on small screens
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .search-section input {
+        max-width: 100%; // Full width for search input on small screens
+    }
+
+    .payment-section input {
+        max-width: 100%; // Full width for payment input on small screens
+    }
+
+    .quantity-input {
+        width: 60px; // Slightly increase width for better usability on small screens
+    }
+}

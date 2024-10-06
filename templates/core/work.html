@@ -1,54 +1,81 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block head %}
+    <link rel="stylesheet" href="{% static 'core/css/work.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <h2>Cashier System</h2>
-    
-    <!-- Search Section -->
-    <div class="search-section">
-        <input type="text" id="product-search" class="form-control" placeholder="Search for medications..." autocomplete="off">
-        <div id="search-results" class="search-results">
-            <!-- Search results will be dynamically populated here -->
+<div class="cashier-container">
+    <!-- Left: Search Section -->
+    <div class="left-section">
+        <h3>Search Products</h3>
+        <div class="search-section">
+            <input type="text" id="product-search" class="form-control" placeholder="Search for medications..." autocomplete="off">
+            <div id="search-results" class="search-results">
+                <!-- Search results will be dynamically populated here -->
+            </div>
         </div>
     </div>
 
-    <!-- Cart Section -->
-    <div id="cart-container" class="cart-container mt-4">
-        <h3>Cart</h3>
-        <div id="cart-items">
-            <!-- Cart items will be dynamically updated here via JS -->
+    <!-- Right: Cart and Checkout Section -->
+    <div class="right-section">
+        <div class="barcode-scanner">
+            <h3>Scan Barcode</h3>
+            <video id="video" width="300" height="200" style="border: 1px solid black;"></video>
+            <div id="product-info">
+                <p>Scanned Barcode: <span id="scanned-barcode"></span></p>
+            </div>
         </div>
-        <p><strong>Total:</strong> $<span id="total-price">0.00</span></p>
-    </div>
+        
+        <!-- Cart Section -->
+        <div id="cart-container" class="cart-container">
+            <h3>Cart</h3>
+            <div id="cart-items">
+            </div>
+            <p><strong>Total:</strong> $<span id="total-price">0</span></p>
+        </div>
 
-    <!-- Payment Section -->
-    <div class="payment-section mt-4">
-    <div class="form-group">
-        <label for="discount">Discount</label>
-        <input type="number" step="250" id="discount" name="discount" class="form-control" placeholder="Enter discount amount" value=0>
+        <!-- Payment Section -->
+        <div class="payment-section mt-4">
+            <div class="form-group">
+                <label for="discount">Discount</label>
+                <input type="number" step="250" id="discount" name="discount" class="form-control" placeholder="Enter discount amount" value=0>
+            </div>
+            <div class="form-group">
+                <label for="payment-received">Payment Received</label>
+                <input type="number" step="250" id="payment-received" name="payment_received" class="form-control" required value=0>
+            </div>
+            <button onclick="checkout()" class="btn btn-primary mt-3">Complete Sale</button>
+            <p id="checkout-message" class="mt-3 text-success" style="display: none;">Sale completed successfully!</p>
+        </div>
     </div>
-    <div class="form-group">
-        <label for="payment-received">Payment Received</label>
-        <input type="number" step="250" id="payment-received" name="payment_received" class="form-control" required value=0>
-    </div>
-    <button onclick="checkout()" class="btn btn-primary mt-3">Complete Sale</button>
-    <p id="checkout-message" class="mt-3 text-success" style="display: none;">Sale completed successfully!</p>
 </div>
+
+<!-- product information -->
+<div id="modal">
+    <div class="modal-content">
+        <span id="close-modal" style="cursor:pointer; color:red;">&times; Close</span>
+        <h2>Product Information</h2>
+        <div id="product-info-modal"></div>
+        <div>
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" value="1" min="1">
+        </div>
+        <button id="add-to-cart-modal" class="btn btn-primary">Add to Cart</button>
+    </div>
 </div>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Function to get a cookie by name
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
             const cookies = document.cookie.split(';');
             for (let i = 0; i < cookies.length; i++) {
                 const cookie = cookies[i].trim();
-                // Check if this cookie string begins with the name we want
                 if (cookie.startsWith(name + '=')) {
                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                     break;
@@ -58,20 +85,17 @@
         return cookieValue;
     }
 
-    // Pass the pharmacy ID from the Django context
     const pharmacyId = "{{ pharmacy.id }}";  
 
-    // Add event listener to the search input field
     document.getElementById('product-search').addEventListener('keyup', function() {
         searchMedications();
     });
 
-    // Function to search for medications
     function searchMedications() {
         const query = document.getElementById('product-search').value;
 
         if (query.length > 2) {
-            fetch(`/api/pharmacy/${pharmacyId}/search/?q=${encodeURIComponent(query)}`)  // Ensure the URL is correct
+            fetch(`/api/pharmacy/${pharmacyId}/search/?q=${encodeURIComponent(query)}`) 
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -80,14 +104,13 @@
                 })
                 .then(data => {
                     const searchResults = document.getElementById('search-results');
-                    searchResults.innerHTML = ''; // Clear previous results
-
+                    searchResults.innerHTML = '';
                     data.forEach(item => {
                         const resultItem = document.createElement('div');
                         resultItem.classList.add('search-item');
                         resultItem.innerHTML = `
-                            ${item.medication_name} [${item.generic_name}] - $${item.price} (Stock: ${item.stock_level})
-                            <button onclick="addToCart(${item.id})">Add to Cart</button>
+                            ${item.medication_name} [${item.generic_name}](${item.manufacturer}) - $${item.price} (Stock: ${item.stock_level})
+                            <button onclick="showProductModal(${item.id}, '${item.medication_name}', ${item.price}, ${item.stock_level})">Add to Cart</button>
                         `;
                         searchResults.appendChild(resultItem);
                     });
@@ -96,14 +119,38 @@
         }
     }
 
-    // Add product to cart by product ID
-    function addToCart(productId) {
+    function showProductModal(item) {
+        const productInfoModal = document.getElementById('product-info-modal');
+        productInfoModal.innerHTML = `
+            <h3>${item.medication_name} [${item.manufacturer}]</h3>
+            <p>ingredients: ${item.ingredients}</p>
+            <p>Price: $${item.price}</p>
+            <p>Stock: ${item.stock_level}</p>
+        `;
+        document.getElementById('modal').style.display = 'flex';
+
+    
+        document.getElementById('add-to-cart-modal').onclick = function() {
+            const quantity = document.getElementById('quantity').value;
+            addToCart(item.id, quantity);
+            document.getElementById('quantity').value = 1;
+            document.getElementById('modal').style.display = 'none';
+        };
+    }
+
+    document.getElementById('modal').style.display = 'none';
+    document.getElementById('close-modal').onclick = function() {
+        document.getElementById('modal').style.display = 'none';
+    }
+
+    function addToCart(productId, quantity) {
         fetch(`/api/pharmacy/${pharmacyId}/cart/${productId}/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': getCookie('csrftoken'),  // Include CSRF token
+                'X-CSRFToken': getCookie('csrftoken'), 
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({ quantity: quantity })
         })
         .then(response => {
             if (!response.ok) {
@@ -113,22 +160,23 @@
         })
         .then(data => {
             if (data.message) {
-                updateCartView(); // Update cart after successfully adding an item
+                updateCartView();
             }
         })
         .catch(error => console.error('Error adding to cart:', error));
     }
+
     function removeFromCart(productId) {
         fetch(`/api/pharmacy/${pharmacyId}/cart/${productId}/`, {
             method: 'DELETE',
             headers: {
-                'X-CSRFToken': getCookie('csrftoken'),  // Include CSRF token
+                'X-CSRFToken': getCookie('csrftoken'), 
                 'Content-Type': 'application/json'
             }
         })
         .then(response => {
             if (response.ok) {
-                updateCartView(); // Refresh the cart view after removing the item
+                updateCartView();
             } else {
                 console.error('Error removing item from cart:', response.statusText);
             }
@@ -136,7 +184,6 @@
         .catch(error => console.error('Error removing from cart:', error));
     }
 
-    // Update the cart view for the pharmacy
     function updateCartView() {
         fetch(`/api/pharmacy/${pharmacyId}/cart/`)
             .then(response => {
@@ -147,7 +194,7 @@
             })
             .then(data => {
                 const cartContainer = document.getElementById('cart-items');
-                cartContainer.innerHTML = ''; // Clear current cart items
+                cartContainer.innerHTML = '';
 
                 data.cart_items.forEach(item => {
                     const cartItem = document.createElement('div');
@@ -159,26 +206,24 @@
                     cartContainer.appendChild(cartItem);
                 });
 
-                // Update total price
                 document.getElementById('total-price').innerText = data.total_price;
             })
             .catch(error => console.error('Error updating cart view:', error));
     }
 
-    // Complete the sale (checkout)
     function checkout() {
         const paymentReceived = document.getElementById('payment-received').value;
-        const discount = document.getElementById('discount').value; // Get discount value
+        const discount = document.getElementById('discount').value;
     
         fetch(`/api/pharmacy/${pharmacyId}/checkout/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': getCookie('csrftoken'),  // Include CSRF token
+                'X-CSRFToken': getCookie('csrftoken'), 
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ 
                 payment_received: paymentReceived,
-                discount: discount // Include discount in the request body
+                discount: discount
             })
         })
         .then(response => {
@@ -189,17 +234,53 @@
         })
         .then(data => {
             if (data.error) {
-                alert(data.error); // Show error if payment is insufficient
+                alert(data.error);
             } else {
                 document.getElementById('checkout-message').style.display = 'block';
-                document.getElementById('payment-received').value = 0; // Reset payment received
-                document.getElementById('discount').value = 0; // Reset discount input
+                document.getElementById('payment-received').value = 0;
+                document.getElementById('discount').value = 0;
                 
-                updateCartView(); // Clear the cart after checkout
+                updateCartView();
             }
         })
         .catch(error => console.error('Error during checkout:', error));
     }
+</script>
+<script src="https://unpkg.com/@zxing/library@latest"></script>
+
+<script>
+    const codeReader = new ZXing.BrowserMultiFormatReader();
+    const videoElement = document.getElementById('video');
+    const resultElement = document.getElementById('scanned-barcode');
+
+
+    function sendBarcode(code) {
+        fetch(`/api/pharmacy/${pharmacyId}/search/?barcode=${encodeURIComponent(code)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        item = data[0];
+                        showProductModal(item);
+                    })
+                    .catch(error => console.error('Error fetching search results:', error));
+        };
+
+    function startScanning() {
+        codeReader.decodeFromVideoDevice(null, videoElement, (result, err) => {
+            if (result && result.text.length >= 10) {
+                resultElement.innerText = `${result.text}`;
+                sendBarcode(result.text)
+            }
+            if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error(err);
+            }
+        });
+    }
+    startScanning();
 </script>
 
 {% endblock scripts %}
