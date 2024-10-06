@@ -27,7 +27,7 @@ ADMIN_PAGE_URL = os.environ['ADMIN_PAGE']
 
 ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS'].split(',')
 
-
+CSRF_TRUSTED_ORIGINS = os.environ['CSRF_TRUSTED_ORIGINS'].split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
