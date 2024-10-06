@@ -1,7 +1,9 @@
 from django.db import models
 from users.models import Pharmacy, Supplier, User
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.utils import timezone
+
 # Create your models here.
 
 DOSAGE_FORMS = [
@@ -40,17 +42,21 @@ class Medication(models.Model):
     dosage_form = models.CharField(max_length=50, choices=DOSAGE_FORMS)
     strength = models.CharField(max_length=100) 
     active_ingredients = models.TextField(blank=True, null=True)
+    barcode = models.CharField(max_length=100, unique=True, blank=True, null=True, validators=[
+        RegexValidator(regex='^\\d+$', message='Barcode must be numeric.')
+    ])
+
     rxnorm_code = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
         return self.name
+
     class Meta:
-        unique_together = ('name','manufacturer','dosage_form','strength')
+        unique_together = ('name', 'manufacturer', 'dosage_form', 'strength')
     
 class Product(models.Model):
-    pharmacy = models.ForeignKey(Pharmacy,on_delete=models.CASCADE)
+    pharmacy = models.ForeignKey(Pharmacy, on_delete=models.CASCADE)
     medication = models.ForeignKey(Medication, on_delete=models.CASCADE)
-    barcode = models.CharField(max_length=100, unique=True)
     price = models.PositiveBigIntegerField()
     expiration_date = models.DateField()
     stock_level = models.PositiveIntegerField()
@@ -62,10 +68,20 @@ class Product(models.Model):
     def clean(self):
         if self.expiration_date < timezone.now().date():
             raise ValidationError('Expiration date cannot be in the past.')
-    class Meta:
-        indexes = [
-            models.Index(fields=['barcode']),
-        ]
+
+    @classmethod
+    def get_products_by_barcode(cls, pharmacy, barcode):
+        try:
+            # Ensure the barcode is in the correct format for comparison
+            medication = Medication.objects.get(barcode=barcode)
+            products = cls.objects.filter(medication=medication, pharmacy=pharmacy)
+        except Medication.DoesNotExist:
+            products = cls.objects.none()  # Return empty QuerySet if not found
+        except Exception as e:
+            products = cls.objects.none()  # Return an empty QuerySet on error
+
+        # Return either the cached data or the QuerySet if it was previously cached
+        return products
 
 class Sale(models.Model):
     pharmacy = models.ForeignKey(Pharmacy, on_delete=models.CASCADE)

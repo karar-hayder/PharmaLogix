@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.core.cache import cache
 
 from .models import Medication, Product, Sale, SaleItem, Pharmacy
 from .serializers import MedicationSerializer,  ProductSerializer, SaleSerializer
@@ -116,25 +117,39 @@ class CheckoutAPIView(APIView):
         return Response(SaleSerializer(sale).data, status=status.HTTP_201_CREATED)
 
 class ProductSearchAPIView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request, pharmacy_id):
         # Get the search query from the request parameters
-        query = request.GET.get('q', '').strip()
+        query = request.GET.get('q', None)
+        barcode = request.GET.get('barcode',None)
 
         # Ensure pharmacy exists
         pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
-
-        if not query:
+        products = None
+        if not query and not barcode:
             return Response({'error': 'Search query cannot be empty'}, status=status.HTTP_400_BAD_REQUEST)
+        if barcode and len(barcode.strip())>=10:
+            barcode = barcode.strip()
+            cache_key = f'products_barcode_{barcode}'
+            products = cache.get(cache_key)
 
-        # Search products in the specified pharmacy by medication name, generic name, etc.
-        products = Product.objects.filter(
-            Q(medication__name__icontains=query) |
-            Q(medication__generic_name__icontains=query) |
-            Q(medication__manufacturer__icontains=query) |
-            Q(medication__dosage_form__icontains=query),
-            pharmacy=pharmacy
-        )
-
-        # Serialize the results
+            if products is None:
+                products = Product.get_products_by_barcode(pharmacy, barcode)
+                cached_data = ProductSerializer(products, many=True).data
+                cache.set(cache_key, cached_data, timeout=60)
+            else:
+                return Response(products, status=status.HTTP_200_OK if products else status.HTTP_204_NO_CONTENT)
+            
+        if query:
+            query = query.strip()
+            products = Product.objects.filter(
+                Q(medication__name__icontains=query) |
+                Q(medication__generic_name__icontains=query) |
+                Q(medication__manufacturer__icontains=query) |
+                Q(medication__barcode__icontains=query) |
+                Q(medication__dosage_form__icontains=query),
+                pharmacy=pharmacy
+            )
+        
         serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK if products else status.HTTP_204_NO_CONTENT)
