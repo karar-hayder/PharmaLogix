@@ -21,6 +21,30 @@ class MedicationCreateView(APIView):
             return Response(MedicationSerializer(medication).data)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
+class MedicationSearchView(APIView):
+
+    def get(self, request):
+        name = request.query_params.get('name', None)
+        pk = request.query_params.get('pk', None)
+        barcode = request.query_params.get('barcode', None)
+        if not name and not pk and not barcode:
+            return Response({"error": "No search term provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        query = Q()
+        if pk:
+            query |= Q(pk=pk)
+        if barcode:
+            query |= Q(barcode=str(barcode))
+        if name:
+            query |= Q(name__icontains=name)
+        print(query)
+        medications = Medication.objects.filter(query)
+        if medications.exists():
+            serializer = MedicationSerializer(medications, many=True)
+            return Response(serializer.data, status=200)
+        else:
+            return Response([], status=200)
+        
 # Updated CartAPIView with pharmacy_id
 class CartAPIView(APIView):
     def get(self, request, pharmacy_id):
