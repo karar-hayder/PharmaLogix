@@ -4,7 +4,7 @@ from .models import Medication, Product, SaleItem, Sale
 class MedicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medication
-        fields = ('name', 'generic_name', 'manufacturer', 'dosage_form', 'strength', 'active_ingredients', 'rxnorm_code')
+        fields = ('pk','name', 'generic_name', 'manufacturer', 'dosage_form', 'strength', 'active_ingredients', 'barcode','rxnorm_code')
         depth = 1
 
 class ProductSerializer(serializers.ModelSerializer):
