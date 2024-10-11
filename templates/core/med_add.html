@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<title>Medication Management</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="{% static 'core/css/barcode_add.css' %}">
+{% endblock head %}
+
+{% block content %}
+
+<div class='medication-management'>
+<h1>Products Management</h1>
+
+
+<h2>Scan Product Barcode</h2>
+<video id="video" width="300" height="200" style="border: 1px solid gray"></video>
+<p>Scanned Barcode: <span id="scanned-barcode">None</span></p>
+<p id="barcode-result"></p>
+
+
+<h2>Update Product</h2>
+<form id="update-medication-form">
+    <label for="search">Search Name:</label>
+    <input type="text" id="search" name="search" placeholder="Enter name" required>
+    <button type="button" id="search-button">Search</button>
+</form>
+
+<div id="search-results"></div>
+
+
+
+<!-- product information -->
+<div id="modal">
+    <div class="modal-content">
+        <span id="close-modal" style="cursor:pointer; color:red;">&times; Close</span>
+        <h2>Product Information</h2>
+        <div id="product-info-modal"></div>
+        <div>
+            <label for="quantity">Quantity to add:</label>
+            <input type="number" id="quantity" value="1" min="1">
+        </div>
+        <div>
+            <label for="expiration-date">Expiration Date:</label>
+            <input type="date" id="expiration-date" required>
+        </div>
+        <button id="update-item-modal" class="btn btn-primary">Update</button>
+    </div>
+</div>
+
+
+<div id="add-product-modal" style="display:none;">
+    <div class="modal-content">
+        <span id="close-add-product-modal" style="cursor:pointer; color:red;">&times; Close</span>
+        <h2>Add New Product</h2>
+        <form id="add-product-form">
+            <label for="add-product-price">Price:</label>
+            <input type="number" id="add-product-price" name="price" min="0" step="0.01" required><br>
+
+            <label for="add-product-stock_level">Stock Level:</label>
+            <input type="number" id="add-product-stock_level" name="stock_level" min="0" required><br>
+
+            <label for="add-product-expiration_date">Expiration Date:</label>
+            <input type="date" id="add-product-expiration_date" name="expiration_date" required><br>
+
+            <label for="add-product-supplier">Supplier:</label>
+            <input type="text" id="add-product-supplier" name="supplier"><br>
+
+            <button type="button" id="submit-add-product">Add Product</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+    const pharmacyId = "{{ pharmacy.id }}";  
+
+    function getCSRFToken() {
+        let csrfToken = null;
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const trimmedCookie = cookie.trim();
+            if (trimmedCookie.startsWith('csrftoken=')) {
+                csrfToken = trimmedCookie.substring('csrftoken='.length);
+                break;
+            }
+        }
+        return csrfToken;
+    }
+
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!(/^GET|HEAD|OPTIONS|TRACE$/i.test(settings.type))) {
+                xhr.setRequestHeader('X-CSRFToken', getCSRFToken());
+            }
+        }
+    });
+    let searchTimeout = null;
+
+
+    $('#search').on('keyup', function() {
+        clearTimeout(searchTimeout);
+
+        const searchQuery = $(this).val();
+        
+
+        if (searchQuery.length >= 3) {
+            searchTimeout = setTimeout(function() {
+                $.ajax({
+                    url: '/api/medication/search/',
+                    data: { name: searchQuery },
+                    success: function(data) {
+                        $('#search-results').empty();
+
+                        if (data.length > 0) {
+                            data.forEach(medication => {
+                                $('#search-results').append(`
+                                    <div>
+                                        <p>${medication.name} (${medication.barcode})</p>
+                                        <button class="add-button" data-pk="${medication.pk}" data-name="${medication.name}">Add</button>
+                                    </div>
+                                `);
+                            });
+                        } else {
+                            $('#search-results').append('<p>No medications found.</p>');
+                        }
+                    },
+                    error: function() {
+                        alert('Error searching for medications');
+                    }
+                });
+            }, 300);
+        } else {
+            $('#search-results').empty();
+        }
+    });
+</script>
+<script>
+    
+    function showProductModal(item) {
+        const productInfoModal = document.getElementById('product-info-modal');
+        
+
+        productInfoModal.innerHTML = `
+            <h3>${item.medication_name} ${item.strength} [${item.manufacturer}]</h3>
+            <p>Ingredients: ${item.ingredients}</p>
+            <p>Dosage form: ${item.dosage_form}</p>
+            <p>Price: $${item.price}</p>
+            <p>Stock: ${item.stock_level}</p>
+        `;
+    
+
+        document.getElementById('modal').style.display = 'flex';
+    
+
+        document.getElementById('update-item-modal').onclick = function() {
+            const quantity = document.getElementById('quantity').value;
+            const expirationDate = document.getElementById('expiration-date').value;
+    
+            if (!expirationDate) {
+                alert('Please provide a valid expiration date');
+                return;
+            }
+
+            updateProduct(item.id, quantity, expirationDate);
+            document.getElementById('quantity').value = 1;
+            document.getElementById('expiration-date').value = '';
+    
+
+            document.getElementById('modal').style.display = 'none';
+        };
+        
+
+        document.getElementById('close-modal').onclick = function() {
+            document.getElementById('modal').style.display = 'none';
+        };
+    }
+    
+
+    function updateProduct(productId, quantity, expirationDate) {
+
+        fetch(`/api/pharmacy/${pharmacyId}/update/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify({
+                quantity: quantity,
+                expiration_date: expirationDate
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Product updated successfully');
+            } else {
+                alert('Error updating product: ' + data.error);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    let selectedMedId = null;
+
+
+    function showAddProductForm(medicationId, medicationName) {
+        selectedMedId = medicationId;
+        
+    
+        $('#add-product-modal').show();
+
+    
+        $('#add-product-modal h2').text(`Add New Product for ${medicationName}`);
+    }
+
+
+    $('#close-add-product-modal').on('click', function() {
+        $('#add-product-modal').hide();
+        $('#add-product-form')[0].reset();
+    });
+
+
+    $(document).on('click', '.add-button', function() {
+        const medId = $(this).data('pk');
+        const medName = $(this).data('name');
+        showAddProductForm(medId, medName);
+    });
+
+
+    $('#submit-add-product').on('click', function() {
+        const price = $('#add-product-price').val();
+        const stock_level = $('#add-product-stock_level').val();
+        const expiration_date = $('#add-product-expiration_date').val();
+        const supplier = $('#add-product-supplier').val();
+
+        if (!price || !stock_level || !expiration_date) {
+            alert('Please fill in all the fields.');
+            return;
+        }
+
+    
+        $.ajax({
+            url: `/api/pharmacy/${pharmacyId}/add/${selectedMedId}/`, 
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken(), 
+            },
+            data: {
+                price: price,
+                stock_level: stock_level,
+                expiration_date: expiration_date,
+                supplier: supplier
+            },
+            success: function(response) {
+                alert('Product added successfully!');
+                $('#add-product-modal').hide();
+                $('#add-product-form')[0].reset();
+            },
+            error: function() {
+                alert('Error adding product');
+            }
+        });
+    });
+    
+</script>
+
+
+<script>
+    const codeReader = new ZXing.BrowserMultiFormatReader();
+    const videoElement = document.getElementById('video');
+    const resultElement = document.getElementById('scanned-barcode');
+
+
+    function sendBarcode(code) {
+        fetch(`/api/pharmacy/${pharmacyId}/search/?barcode=${encodeURIComponent(code)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log(data)
+                        item = data[0];
+                        showProductModal(item);
+                    })
+                    .catch(error => console.error('Error fetching search results:', error));
+        };
+        let lastScannedCode = null;
+        
+        function startScanning() {
+            codeReader.decodeFromVideoDevice(null, videoElement, (result, err) => {
+                if (result && result.text.length >= 10) {            
+                    if (result.text !== lastScannedCode) {
+                        lastScannedCode = result.text;
+                        resultElement.innerText = `Scanned: ${result.text}`;
+                        const audio = new Audio('{% static "success-sound.mp3" %}');
+                        audio.play();
+                        sendBarcode(result.text);
+    
+                    }
+                }
+                if (err && !(err instanceof ZXing.NotFoundException)) {
+                    console.error(err);
+                }
+            }
+            );
+        }
+        
+        startScanning();
+</script>
+{% endblock scripts %}

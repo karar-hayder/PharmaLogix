@@ -1,0 +1,120 @@
+.medication-management {
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+.medication-management h1 {
+  font-size: 28px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.medication-management h2 {
+  font-size: 24px;
+  margin: 1.5rem 0 0.5rem;
+  text-align: center;
+  color: #3b8b4e;
+}
+.medication-management video {
+  border: 1px solid gray;
+  border-radius: 5px;
+  margin: 1rem 0;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+.medication-management #barcode-result, .medication-management #scanned-barcode {
+  font-size: 16px;
+  text-align: center;
+  margin-top: 0.5rem;
+  color: #333;
+}
+.medication-management form {
+  margin: 2rem 0;
+}
+.medication-management form label {
+  display: block;
+  margin: 0.5rem 0;
+  font-weight: bold;
+}
+.medication-management form input[type=text] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  font-size: 16px;
+}
+.medication-management form input[type=text]:focus {
+  border-color: #3b8b4e;
+  box-shadow: 0 0 5px rgba(59, 139, 78, 0.5);
+}
+.medication-management form button {
+  background-color: #3b8b4e;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.medication-management form button:hover {
+  background-color: #326f3e;
+}
+.medication-management #edit-modal {
+  display: none;
+  position: fixed;
+  top: 5%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.medication-management #edit-modal .modal-content {
+  position: absolute;
+  width: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+.medication-management #edit-modal .modal-content input {
+  width: 90%;
+}
+.medication-management #edit-modal .modal-content h3 {
+  margin: 0 0 1rem;
+  text-align: center;
+}
+.medication-management #search-results {
+  margin-top: 1rem;
+}
+.medication-management #search-results p {
+  text-align: center;
+}
+.medication-management #search-results .edit-button {
+  margin-top: 0.5rem;
+  background-color: #0073e6;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+.medication-management #search-results .edit-button:hover {
+  background-color: #005bb5;
+}
+
+@media (max-width: 768px) {
+  .medication-management {
+    padding: 1rem;
+  }
+  .medication-management h1 {
+    font-size: 24px;
+  }
+  .medication-management h2 {
+    font-size: 20px;
+  }
+}/*# sourceMappingURL=barcode_add.css.map */

@@ -61,7 +61,6 @@ class BarcodeAdderView(LoginRequiredMixin,UserPassesTestMixin,TemplateView):
 
         try:
             put_data = json.loads(request.body.decode('utf-8'))
-            print(put_data)
             medication_id = put_data.get('medication_id')
             barcode = put_data.get('barcode')
 
@@ -98,3 +97,13 @@ class BarcodeAdderView(LoginRequiredMixin,UserPassesTestMixin,TemplateView):
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON data."}, status=status.HTTP_400_BAD_REQUEST)
+        
+class AddProductsView(TemplateView):
+    template_name = 'core/med_add.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pharmacy_id = self.kwargs.get('pharmacy_id')
+        pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
+        context['pharmacy'] = pharmacy
+        return context

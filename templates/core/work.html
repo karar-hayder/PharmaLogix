@@ -110,7 +110,7 @@
                         resultItem.classList.add('search-item');
                         resultItem.innerHTML = `
                             ${item.medication_name} [${item.generic_name}](${item.manufacturer}) - $${item.price} (Stock: ${item.stock_level})
-                            <button onclick="showProductModal(${item.id}, '${item.medication_name}', ${item.price}, ${item.stock_level})">Add to Cart</button>
+                            <button onclick="showProductModal(${item})">Add to Cart</button>
                         `;
                         searchResults.appendChild(resultItem);
                     });
@@ -122,8 +122,9 @@
     function showProductModal(item) {
         const productInfoModal = document.getElementById('product-info-modal');
         productInfoModal.innerHTML = `
-            <h3>${item.medication_name} [${item.manufacturer}]</h3>
-            <p>ingredients: ${item.ingredients}</p>
+            <h3>${item.medication_name} ${item.strength} [${item.manufacturer}]</h3>
+            <p>Ingredients: ${item.ingredients}</p>
+            <p>Dosage form: ${item.dosage_form}</p>
             <p>Price: $${item.price}</p>
             <p>Stock: ${item.stock_level}</p>
         `;
@@ -263,24 +264,35 @@
                         return response.json();
                     })
                     .then(data => {
+                        console.log(data)
                         item = data[0];
                         showProductModal(item);
                     })
                     .catch(error => console.error('Error fetching search results:', error));
         };
-
-    function startScanning() {
-        codeReader.decodeFromVideoDevice(null, videoElement, (result, err) => {
-            if (result && result.text.length >= 10) {
-                resultElement.innerText = `${result.text}`;
-                sendBarcode(result.text)
+        let lastScannedCode = null;
+        
+        function startScanning() {
+            codeReader.decodeFromVideoDevice(null, videoElement, (result, err) => {
+                if (result && result.text.length >= 10) {            
+                    if (result.text !== lastScannedCode) {
+                        lastScannedCode = result.text;
+                        resultElement.innerText = `Scanned: ${result.text}`;
+                        const audio = new Audio('{% static "success-sound.mp3" %}');
+                        audio.play();
+                        sendBarcode(result.text);
+    
+                    }
+                }
+                if (err && !(err instanceof ZXing.NotFoundException)) {
+                    console.error(err);
+                }
             }
-            if (err && !(err instanceof ZXing.NotFoundException)) {
-                console.error(err);
-            }
-        });
-    }
-    startScanning();
+            );
+        }
+        
+        startScanning();
+        
 </script>
 
 {% endblock scripts %}

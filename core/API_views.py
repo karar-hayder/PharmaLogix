@@ -6,6 +6,8 @@ from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from .models import Medication, Product, Sale, SaleItem, Pharmacy
 from .serializers import MedicationSerializer,  ProductSerializer, SaleSerializer
@@ -37,7 +39,6 @@ class MedicationSearchView(APIView):
             query |= Q(barcode=str(barcode))
         if name:
             query |= Q(name__icontains=name)
-        print(query)
         medications = Medication.objects.filter(query)
         if medications.exists():
             serializer = MedicationSerializer(medications, many=True)
@@ -159,10 +160,10 @@ class ProductSearchAPIView(APIView):
 
             if products is None:
                 products = Product.get_products_by_barcode(pharmacy, barcode)
-                cached_data = ProductSerializer(products, many=True).data
-                cache.set(cache_key, cached_data, timeout=60)
-            else:
-                return Response(products, status=status.HTTP_200_OK if products else status.HTTP_204_NO_CONTENT)
+                products = ProductSerializer(products, many=True).data
+                cache.set(cache_key, products, timeout=60)
+            return Response(products, status=status.HTTP_200_OK if products else status.HTTP_204_NO_CONTENT)
+            
             
         if query:
             query = query.strip()
@@ -177,3 +178,48 @@ class ProductSearchAPIView(APIView):
         
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK if products else status.HTTP_204_NO_CONTENT)
+class ProductUpdateAPIView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request, pharmacy_id,product_id):
+        quantity = request.data.get('quantity')
+        expiration_date_str = request.data.get('expiration_date')
+
+        if not product_id or not quantity or not expiration_date_str:
+            return Response({'error': 'Product ID, quantity, and expiration date are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            product = get_object_or_404(Product, id=int(product_id), pharmacy_id=int(pharmacy_id))
+
+            expiration_date = timezone.datetime.strptime(expiration_date_str, '%Y-%m-%d').date()
+
+            if expiration_date < timezone.now().date():
+                return Response({'error': 'Expiration date cannot be in the past.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            product.stock_level += int(quantity)
+            product.expiration_date = expiration_date
+            product.save()
+
+            return Response({'success': 'Product updated successfully.'}, status=status.HTTP_200_OK)
+        
+        except ValidationError as e:
+            
+            return Response({'error': f"{e.messages}"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        except Product.DoesNotExist:
+            return Response({'error': 'Product not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+class ProductCreateView(APIView):
+    serializer_class = ProductSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request, pharmacy_id,med_id):
+        serializer = self.serializer_class(data=request.data)
+        pharmacy = get_object_or_404(Pharmacy,id=pharmacy_id)
+        med = get_object_or_404(Medication,id=med_id)
+        if serializer.is_valid():
+            product = serializer.save(pharmacy=pharmacy,medication=med)
+            return Response(ProductSerializer(product).data)
+        print(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
