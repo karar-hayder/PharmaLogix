@@ -13,12 +13,14 @@
     <nav class="main-nav">
         <ul class="nav-list">
             {% if user.is_authenticated %}
-                <li class="nav-item"><a href="" class="nav-link">Meds</a></li>
-                <li class="nav-item"><a href="" class="nav-link">Scan Medications</a></li>
-                <li class="nav-item"><a href="" class="nav-link">Logout</a></li>
+                <li class="nav-item"><a href="{% url "Main" %}" class="nav-link">Home</a></li>
+                {% block nav %}{% endblock nav %}
+
+                {% if user.is_superuser %}
+                <li class="nav-item"><a href="{% url "Barcode add" %}" class="nav-link">Add Barcodes</a></li>
+                {% endif %}
             {% else %}
                 <li class="nav-item"><a href="{% url "Login" %}" class="nav-link">Login</a></li>
-                <li class="nav-item"><a href="" class="nav-link">Register</a></li>
             {% endif %}
         </ul>
     </nav>
