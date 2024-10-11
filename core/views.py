@@ -23,9 +23,13 @@ class Home(LoginRequiredMixin,TemplateView):
         context['pharmacies'] = self.request.user.pharmacies.all()
         return context
 
-class Work(LoginRequiredMixin,TemplateView):
+class Work(LoginRequiredMixin,UserPassesTestMixin,TemplateView):
     template_name = 'core/work.html'
 
+    def test_func(self) -> bool | None:
+        pharmacy_id = self.kwargs.get('pharmacy_id')
+        pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
+        return pharmacy in self.request.user.pharmacies.all()
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         pharmacy_id = self.kwargs.get('pharmacy_id')
@@ -98,8 +102,13 @@ class BarcodeAdderView(LoginRequiredMixin,UserPassesTestMixin,TemplateView):
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON data."}, status=status.HTTP_400_BAD_REQUEST)
         
-class AddProductsView(TemplateView):
+class AddProductsView(LoginRequiredMixin,UserPassesTestMixin,TemplateView):
     template_name = 'core/med_add.html'
+    
+    def test_func(self) -> bool | None:
+        pharmacy_id = self.kwargs.get('pharmacy_id')
+        pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
+        return pharmacy in self.request.user.pharmacies.all()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

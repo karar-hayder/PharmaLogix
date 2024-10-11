@@ -14,7 +14,7 @@ from .serializers import MedicationSerializer,  ProductSerializer, SaleSerialize
 
 class MedicationCreateView(APIView):
     serializer_class = MedicationSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -24,7 +24,7 @@ class MedicationCreateView(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
 class MedicationSearchView(APIView):
-
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         name = request.query_params.get('name', None)
         pk = request.query_params.get('pk', None)
@@ -48,6 +48,7 @@ class MedicationSearchView(APIView):
         
 # Updated CartAPIView with pharmacy_id
 class CartAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request, pharmacy_id):
         pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
         cart = request.session.get('cart', {})
@@ -94,6 +95,7 @@ class CartAPIView(APIView):
 
 # Updated CheckoutAPIView with pharmacy_id
 class CheckoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request, pharmacy_id):
         pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
         cart = request.session.get('cart', {})
@@ -144,6 +146,7 @@ class CheckoutAPIView(APIView):
         return Response(SaleSerializer(sale).data, status=status.HTTP_201_CREATED)
 
 class ProductSearchAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     permission_classes = [AllowAny]
     def get(self, request, pharmacy_id):
         # Get the search query from the request parameters
@@ -181,7 +184,7 @@ class ProductSearchAPIView(APIView):
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK if products else status.HTTP_204_NO_CONTENT)
 class ProductUpdateAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     
     def post(self, request, pharmacy_id,product_id):
         quantity = request.data.get('quantity')
@@ -214,7 +217,7 @@ class ProductUpdateAPIView(APIView):
 
 class ProductCreateView(APIView):
     serializer_class = ProductSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, pharmacy_id,med_id):
         serializer = self.serializer_class(data=request.data)
