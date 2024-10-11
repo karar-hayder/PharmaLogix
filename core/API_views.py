@@ -72,11 +72,13 @@ class CartAPIView(APIView):
 
         # Get the quantity from the request data, defaulting to 1 if not provided
         quantity = int(request.data.get('quantity', 1))
-
-        if str(product_id) not in cart:
-            cart[str(product_id)] = {'quantity': quantity}
-        else:
-            cart[str(product_id)]['quantity'] += quantity
+        if str(product_id) in cart:
+            quantity += cart[str(product_id)]['quantity']
+        if product.stock_level < quantity:
+            return Response({'error': f'The product stock level is low: {product.stock_level}', 'cart': cart}, status=status.HTTP_400_BAD_REQUEST)    
+        
+        cart[str(product_id)] = {'quantity': quantity}
+        
 
         request.session['cart'] = cart
         return Response({'message': 'Product added to cart', 'cart': cart}, status=status.HTTP_201_CREATED)
