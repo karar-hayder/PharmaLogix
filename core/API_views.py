@@ -114,12 +114,10 @@ class CheckoutAPIView(APIView):
             total_price += product.price * quantity
             cart_items.append({'product': product, 'quantity': quantity, 'price': product.price})
 
-        total_price -= discount
-        if payment_received == 0:
-            payment_received = total_price
+        payment_received = total_price - discount
 
-        if payment_received < total_price:
-            return Response({'error': 'Insufficient payment'}, status=status.HTTP_400_BAD_REQUEST)
+        # if payment_received < total_price:
+        #     return Response({'error': 'Insufficient payment'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Save Sale
         sale = Sale.objects.create(
