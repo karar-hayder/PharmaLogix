@@ -1,0 +1,68 @@
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+.metrics .metric {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.metrics .metric h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #333;
+}
+.metrics .metric p {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.sales-view {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.sales-view h1 {
+  text-align: center;
+  color: #4CAF50;
+  margin-bottom: 20px;
+}
+.sales-view .sales-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+.sales-view .sales-table th, .sales-view .sales-table td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+  font-size: 16px;
+}
+.sales-view .sales-table th:first-child, .sales-view .sales-table td:first-child {
+  width: 80px;
+}
+.sales-view .sales-table th {
+  background-color: #f9f9f9;
+  color: #333;
+  font-weight: bold;
+}
+.sales-view .sales-table tr:nth-child(even) {
+  background-color: white;
+}
+.sales-view .sales-table tr:hover {
+  background-color: #f7f7f7;
+}
+.sales-view p {
+  text-align: center;
+  color: #666;
+  font-size: 18px;
+}/*# sourceMappingURL=sale_list.css.map */

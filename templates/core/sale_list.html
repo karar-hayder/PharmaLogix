@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<title>Medication Management</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="{% static 'core/css/sale_list.css' %}">
+{% endblock head %}
+
+
+{% block content %}
+
+<div class="sales-view">
+    
+    <div class="metrics">
+        <div class="metric">
+            <h3>Total Sales</h3>
+            <p>${{ metrics.total_sales_amount }}</p>
+        </div>
+        <div class="metric">
+            <h3>Total Sales Transactions</h3>
+            <p>{{ metrics.total_sales_count }}</p>
+        </div>
+        <div class="metric">
+            <h3>Average Sale Amount</h3>
+            <p>${{ metrics.average_sale_amount }}</p>
+        </div>
+        <div class="metric">
+            <h3>Total Discounts Given</h3>
+            <p>${{ metrics.total_discount }}</p>
+        </div>
+        <div class="metric">
+            <h3>Total Payment Received</h3>
+            <p>${{ metrics.total_payment_received }}</p>
+        </div>
+        <div class="metric">
+            <h3>Best-Selling Product</h3>
+            <p>{{ metrics.best_selling_product }} - ${{ metrics.best_selling_product_revenue }}</p>
+        </div>
+    </div>
+    <h1>Sales Records</h1>
+    
+    {% if sales %}
+        <table class="sales-table">
+            <thead>
+                <tr>
+                    <th>Sale ID</th>
+                    <th>Cashier</th>
+                    <th>Total Amount</th>
+                    <th>Discount</th>
+                    <th>Payment Received</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                    <tr>
+                        <td>{{ sale.id }}</td>
+                        <td>{{ sale.cashier.username }}</td>
+                        <td>${{ sale.total_amount }}</td>
+                        <td>${{ sale.discount }}</td>
+                        <td>${{ sale.payment_received }}</td>
+                        <td>{{ sale.created_at|date:"Y-m-d H:i:s" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No sales records found.</p>
+    {% endif %}
+</div>
+{% endblock %}
