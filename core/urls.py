@@ -9,6 +9,7 @@ urlpatterns = [
     path('work/<int:pharmacy_id>/',views.Work.as_view(),name='Work'),
     path('medications/add/',views.BarcodeAdderView.as_view(),name='Barcode add'),
     path('Product/<int:pharmacy_id>/add/',views.AddProductsView.as_view(),name='Product add'),
+    path('sale/<int:pharmacy_id>/list/',views.SalesListView.as_view(),name='Sale list'),
 
     ## API ##
     path('api/meds/create/',API_views.MedicationCreateView.as_view(),name="Med create"),
