@@ -7,6 +7,11 @@
 
 {% block nav %}
 <li class="nav-item"><a href="{% url "Product add" pharmacy.id%}" class="nav-link">Add Products</a></li>
+{% if user == pharmacy.owner %}
+<li class="nav-item">
+    <a href="{% url 'Sale list' pharmacy.id %}" class="nav-link">Sales History</a>
+</li>
+{% endif %}
 {% endblock nav %}
 
 {% block content %}
