@@ -66,21 +66,19 @@ class Product(models.Model):
         return f"{self.medication.name} - {self.price} ({self.stock_level})"
     
     def clean(self):
-        if self.expiration_date < timezone.now().date():
+        if self.expiration_date.date() < timezone.now().date():
             raise ValidationError('Expiration date cannot be in the past.')
 
     @classmethod
     def get_products_by_barcode(cls, pharmacy, barcode):
         try:
-            # Ensure the barcode is in the correct format for comparison
             medication = Medication.objects.get(barcode=barcode)
             products = cls.objects.filter(medication=medication, pharmacy=pharmacy)
         except Medication.DoesNotExist:
-            products = cls.objects.none()  # Return empty QuerySet if not found
+            products = cls.objects.none()
         except Exception as e:
-            products = cls.objects.none()  # Return an empty QuerySet on error
+            products = cls.objects.none()
 
-        # Return either the cached data or the QuerySet if it was previously cached
         return products
 
 class Sale(models.Model):
