@@ -1,14 +1,16 @@
+@import '../../base/css/variables.scss';
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: $spacing-large;
 }
 
 h2 {
   text-align: center;
-  color: #2c3e50;
-  font-size: 32px;
-  margin-bottom: 30px;
+  color: $primary-color;
+  font-size: 2rem; // 32px equivalent
+  margin-bottom: $spacing-large * 2; // 30px equivalent
   font-weight: 700;
 }
 
@@ -16,66 +18,65 @@ h2 {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: $spacing-large;
 }
 
 .pharmacy-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: $spacing-large;
   width: 100%;
 }
 
 .pharmacy-card {
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+  background-color: $white-color;
+  padding: $spacing-large;
+  border-radius: 0.625rem; // 10px equivalent
+  box-shadow: 0 4px 10px $shadow-color;
   transition: transform 0.3s, box-shadow 0.3s;
-  border: 1px solid #e0e0e0;
+  border: 1px solid $shadow-color;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
 
   &:hover {
-      transform: translateY(-5px); 
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); 
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px $shadow-hover;
   }
 }
 
 .pharmacy-name {
-  font-size: 24px;
-  color: #3498db; 
+  font-size: 1.5rem; // 24px equivalent
+  color: $link-color;
   font-weight: 600;
-  margin-bottom: 10px;
+  margin-bottom: $spacing-small;
 }
 
 p {
-  font-size: 14px;
-  color: #2c3e50; 
-  margin: 10px 0;
-  opacity: 0.7; 
+  font-size: $font-size-small;
+  color: $text-color;
+  margin: $spacing-small 0;
+  opacity: 0.7;
   transition: opacity 0.3s;
-}
 
-p:hover {
-  opacity: 1; 
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .btn-detail {
-  background-color: #2ecc71; 
-  color: white;
+  background-color: $primary-color;
+  color: $white-color;
   text-decoration: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  font-size: 16px;
+  padding: $spacing-small $spacing-large;
+  border-radius: 0.3125rem; // 5px equivalent
+  font-size: $font-size-base;
   font-weight: 600;
-  margin-top: auto; 
+  margin-top: auto;
   transition: background-color 0.3s, box-shadow 0.3s;
 
   &:hover {
-      background-color: darken(#2ecc71, 10%); 
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    background-color: darken($primary-color, 5%);
   }
 }

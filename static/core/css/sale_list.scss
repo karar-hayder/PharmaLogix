@@ -1,75 +1,73 @@
-$sales-bg: #ffffff;  // Light background for sales section
-$sales-header-bg: #f9f9f9;  // Lighter header background
-$sales-border-color: #ccc;  // Lighter border color
-$sales-hover-bg: #f7f7f7;
+@import '../../base/css/variables.scss';
+
+$sales-bg: $white-color;
+$sales-header-bg: lighten($background-color, 10%);
+$sales-border-color: $shadow-color;
+$sales-hover-bg: lighten($background-color, 5%);
 $sales-table-width: 100%;
 $sales-table-max-width: 800px;
-
-
-
 
 .metrics {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
-    margin: 20px 0;
+    gap: $spacing-large;
+    margin: $spacing-large 0;
 
     .metric {
-        background-color: #fff;
+        background-color: $white-color;
         border: 1px solid $sales-border-color;
-        border-radius: 5px;
-        padding: 15px;
+        border-radius: 0.25rem;
+        padding: $spacing-small * 1.5;
         text-align: center;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        
+        box-shadow: 0 1px 3px $shadow-color;
+
         h3 {
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: #333;
+            font-size: 1.125rem;
+            margin-bottom: $spacing-small;
+            color: $text-color;
         }
 
         p {
-            font-size: 24px;
+            font-size: 1.5rem;
             font-weight: bold;
-            color: #007bff;
+            color: $link-color;
         }
     }
 }
 
-
 .sales-view {
     max-width: $sales-table-max-width;
     margin: 0 auto;
-    padding: 20px;
+    padding: $spacing-large;
     background-color: $sales-bg;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 5px $shadow-color;
+
     h1 {
         text-align: center;
-        color: #4CAF50;
-        margin-bottom: 20px;
+        color: $text-color;
+        margin-bottom: $spacing-large;
     }
 
     .sales-table {
         width: $sales-table-width;
         border-collapse: collapse;
-        margin: 20px 0;
+        margin: $spacing-large 0;
 
         th, td {
             border: 1px solid $sales-border-color;
-            padding: 10px;
+            padding: $spacing-small;
             text-align: left;
-            font-size: 16px;
+            font-size: $font-size-base;
 
             &:first-child {
-                width: 80px; // Adjust the width of the Sale ID column
+                width: 80px;
             }
         }
 
         th {
             background-color: $sales-header-bg;
-            color: #333;
+            color: $text-color;
             font-weight: bold;
         }
 
@@ -84,7 +82,7 @@ $sales-table-max-width: 800px;
 
     p {
         text-align: center;
-        color: #666;
-        font-size: 18px;
+        color: darken($text-color, 20%);
+        font-size: 1.125rem;
     }
 }

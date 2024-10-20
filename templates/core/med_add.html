@@ -120,7 +120,7 @@
                             data.forEach(medication => {
                                 $('#search-results').append(`
                                     <div>
-                                        <p>${medication.name} (${medication.barcode})</p>
+                                        <p>${medication.name} [${medication.generic_name}](${medication.barcode})</p>
                                         <button class="add-button" data-pk="${medication.pk}" data-name="${medication.name}">Add</button>
                                     </div>
                                 `);

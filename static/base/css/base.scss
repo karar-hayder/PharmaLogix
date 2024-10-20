@@ -1,29 +1,38 @@
-body {
-    font-family: 'Roboto', sans-serif; // Modern web-safe font
-    background-color: #f3f6f9; // Soft, neutral background
-    color: #333; // Darker text for better readability
-    line-height: 1.6; // Improved line spacing for better readability
+@import 'variables.scss';
+html, body {
+    height: 100%;
     margin: 0;
     padding: 0;
+    display: flex;
+    flex-direction: column;
 }
 
-// Navigation bar styles
+body {
+    font-family: $font-family;
+    background-color: $background-color;
+    color: $text-color;
+    line-height: $line-height-base;
+    font-size: $font-size-base;
+    margin: 0;
+    padding: 0;
+    flex: 1 0 auto;
+}
 
 .main-nav {
     position: sticky;
     top: 0;
-    background-color: #3b8b4e; // More muted green for a professional look
-    padding: 1.5rem 2rem;
+    background-color: $primary-color;
+    padding: $spacing-large $spacing-large;
     text-align: center;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); // Slight shadow for depth
+    box-shadow: 0 4px 12px $shadow-color;
     z-index: 1000;
 
     @media (max-width: 768px) {
         flex-direction: column;
-        padding: 1rem;
+        padding: $spacing-base;
     }
 }
 
@@ -32,11 +41,11 @@ body {
     margin: 0;
     padding: 0;
     display: flex;
-    gap: 30px; // More space between items for a cleaner layout
+    gap: 30px;
 
     @media (max-width: 768px) {
         flex-direction: column;
-        gap: 15px;
+        gap: $spacing-small;
     }
 }
 
@@ -45,97 +54,93 @@ body {
 }
 
 .nav-link {
-    color: #fff; // White text for the navigation links
+    color: $white-color;
     text-decoration: none;
     font-weight: 500;
-    font-size: 16px;
-    transition: color 0.3s ease, transform 0.3s ease; // Smoother hover transition
+    font-size: $font-size-base;
+    transition: color 0.3s ease, transform 0.3s ease;
 
     &:hover {
-        color: #e0e0e0; // Softer hover effect for better user experience
-        transform: translateY(-2px); // Subtle lift on hover
+        color: lighten($white-color, 15%);
+        transform: translateY(-2px);
     }
 
     &:active {
-        color: #b3b3b3; // Slightly different active state for click feedback
+        color: lighten($white-color, 30%);
     }
 }
 
-// Main content styles
-
 .main-content {
-    max-width: 1100px; // More refined width for improved layout on large screens
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 3rem;
-    background-color: #fff; // Clean white background for content
-    border-radius: 10px; // Softer rounded corners
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); // Deeper shadow for elegance
+    padding: $spacing-large;
+    background-color: $white-color;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px $shadow-color;
     display: flex;
+    flex: 1 0 auto;
     flex-direction: column;
-    align-content: center;
     justify-content: center;
 
     @media (max-width: 768px) {
-        padding: 1.5rem;
+        padding: $spacing-base;
     }
 
     @media (max-width: 480px) {
-        padding: 1rem;
+        padding: $spacing-small;
     }
 }
 
-// Footer styles
-
 .site-footer {
-    background-color: #3b8b4e; // Matching the nav for consistency
-    padding: 1.5rem 2rem;
+    background-color: $primary-color;
+    padding: $spacing-large $spacing-large;
     text-align: center;
-    color: #fff; // White text for good contrast
-    font-size: 14px;
+    color: $white-color;
+    font-size: $font-size-small;
+    margin-top: auto;
+    box-shadow: 0 -2px 6px $shadow-color;
 
     @media (max-width: 768px) {
-        padding: 1rem;
+        padding: $spacing-base;
     }
 
     a {
-        color: #ffffff;
+        color: $white-color;
         text-decoration: underline;
         transition: color 0.3s ease;
 
         &:hover {
-            color: #e0e0e0;
+            color: lighten($white-color, 15%);
         }
     }
 }
 
-// General improvements
-
 button, input[type="submit"] {
-    background-color: #3b8b4e;
-    color: #fff;
+    background-color: $secondary-color;
+    color: $white-color;
     border: none;
     padding: 10px 20px;
-    font-size: 16px;
+    font-size: $font-size-base;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 
     &:hover {
-        background-color: #326f3e;
+        background-color: $hover-color;
     }
 
     &:focus {
         outline: none;
-        box-shadow: 0 0 0 3px rgba(59, 139, 78, 0.4); // Better focus indication
+        box-shadow: 0 0 0 3px rgba($secondary-color, 0.4);
     }
 }
 
 a {
-    color: #0073e6; // Pharmaceutical-friendly blue for links
+    color: $link-color;
     text-decoration: none;
     transition: color 0.3s ease;
 
     &:hover {
-        color: #005bb5; // Darker shade on hover
+        color: $link-hover-color;
     }
 }

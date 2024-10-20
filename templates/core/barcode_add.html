@@ -134,8 +134,9 @@
                             data.forEach(medication => {
                                 $('#search-results').append(`
                                     <div>
-                                        <p>${medication.name} (${medication.barcode})</p>
+                                        <p>${medication.name} [${medication.generic_name}]{${medication.manufacturer}} (${medication.barcode})</p>
                                         <button class="edit-button" data-pk="${medication.pk}" data-name="${medication.name}">Edit</button>
+                                        <hr>
                                     </div>
                                 `);
                             });
@@ -242,6 +243,7 @@
     const videoElement = document.getElementById('video'); 
     const resultElement = document.getElementById('scanned-barcode'); 
     const resultMessage = document.getElementById('barcode-result'); 
+    const barcodeCreate = document.getElementById('create-barcode'); 
 
     
     function sendBarcode(code) {
@@ -261,6 +263,7 @@
                     
                     resultMessage.innerText = "No medication found with that barcode.";
                 }
+                barcodeCreate.value = code
             })
             .catch(error => {
                 console.error('Error fetching medication:', error);

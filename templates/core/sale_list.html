@@ -15,7 +15,7 @@
     <div class="metrics">
         <div class="metric">
             <h3>Total Sales</h3>
-            <p>${{ metrics.total_sales_amount }}</p>
+            <p>{{ metrics.total_sales_amount }} IQD</p>
         </div>
         <div class="metric">
             <h3>Total Sales Transactions</h3>
@@ -23,19 +23,19 @@
         </div>
         <div class="metric">
             <h3>Average Sale Amount</h3>
-            <p>${{ metrics.average_sale_amount }}</p>
+            <p>{{ metrics.average_sale_amount }} IQD</p>
         </div>
         <div class="metric">
             <h3>Total Discounts Given</h3>
-            <p>${{ metrics.total_discount }}</p>
+            <p>{{ metrics.total_discount }} IQD</p>
         </div>
         <div class="metric">
             <h3>Total Payment Received</h3>
-            <p>${{ metrics.total_payment_received }}</p>
+            <p>{{ metrics.total_payment_received }} IQD</p>
         </div>
         <div class="metric">
             <h3>Best-Selling Product</h3>
-            <p>{{ metrics.best_selling_product }} - ${{ metrics.best_selling_product_revenue }}</p>
+            <p>{{ metrics.best_selling_product }} - {{ metrics.best_selling_product_revenue }} IQD</p>
         </div>
     </div>
     <h1>Sales Records</h1>
@@ -45,7 +45,7 @@
             <thead>
                 <tr>
                     <th>Sale ID</th>
-                    <th>Cashier</th>
+                    <th>pharmacist</th>
                     <th>Total Amount</th>
                     <th>Discount</th>
                     <th>Payment Received</th>
@@ -57,10 +57,10 @@
                     <tr>
                         <td>{{ sale.id }}</td>
                         <td>{{ sale.cashier.username }}</td>
-                        <td>${{ sale.total_amount }}</td>
-                        <td>${{ sale.discount }}</td>
-                        <td>${{ sale.payment_received }}</td>
-                        <td>{{ sale.created_at|date:"Y-m-d H:i:s" }}</td>
+                        <td>{{ sale.total_amount }} IQD</td>
+                        <td>{{ sale.discount }} IQD</td>
+                        <td>{{ sale.payment_received }} IQD</td>
+                        <td>{{ sale.created_at|date:"Y-m-d H:i" }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
