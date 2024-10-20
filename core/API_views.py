@@ -33,12 +33,12 @@ class MedicationSearchView(APIView):
             return Response({"error": "No search term provided."}, status=status.HTTP_400_BAD_REQUEST)
 
         query = Q()
-        if pk:
+        if pk != None:
             query |= Q(pk=pk)
-        if barcode:
+        if barcode != None:
             query |= Q(barcode=str(barcode))
-        if name:
-            query |= Q(name__icontains=name)
+        if name != None:
+            query |= Q(name__icontains=name) | Q(generic_name__icontains=name)
         medications = Medication.objects.filter(query)
         if medications.exists():
             serializer = MedicationSerializer(medications, many=True)
