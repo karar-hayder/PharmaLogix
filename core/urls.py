@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/medication/search/', API_views.MedicationSearchView.as_view(), name='Med search'),
     path('api/pharmacy/<int:pharmacy_id>/cart/', API_views.CartAPIView.as_view(), name='cart'),
     path('api/pharmacy/<int:pharmacy_id>/cart/<int:product_id>/', API_views.CartAPIView.as_view(), name='cart'),
+    path('api/pharmacy/<int:pharmacy_id>/cart/<int:product_id>/update-quantity/', API_views.CartAPIView.as_view()),
     path('api/pharmacy/<int:pharmacy_id>/checkout/', API_views.CheckoutAPIView.as_view(), name='checkout'),
     path('api/pharmacy/<int:pharmacy_id>/search/', API_views.ProductSearchAPIView.as_view(), name='product-search'),
     path('api/pharmacy/<int:pharmacy_id>/update/<int:product_id>/', API_views.ProductUpdateAPIView.as_view(), name='product-update'),

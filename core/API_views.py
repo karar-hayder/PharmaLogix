@@ -71,7 +71,6 @@ class CartAPIView(APIView):
         product = get_object_or_404(Product, id=product_id, pharmacy=pharmacy)
         cart = request.session.get('cart', {})
 
-        # Get the quantity from the request data, defaulting to 1 if not provided
         quantity = int(request.data.get('quantity', 1))
         if str(product_id) in cart:
             quantity += cart[str(product_id)]['quantity']
@@ -83,6 +82,31 @@ class CartAPIView(APIView):
 
         request.session['cart'] = cart
         return Response({'message': 'Product added to cart', 'cart': cart}, status=status.HTTP_201_CREATED)
+    
+    def patch(self, request, pharmacy_id, product_id):
+        cart = request.session.get('cart', {})
+        change = request.data.get('change', 0)
+        
+        if str(product_id) not in cart:
+            return Response({'error': 'Product not in cart'}, status=status.HTTP_404_NOT_FOUND)
+
+        current_quantity = cart[str(product_id)]['quantity']
+        new_quantity = current_quantity + change
+
+        # Ensure quantity does not go below 1
+        if new_quantity < 1:
+            return Response({'error': 'Quantity cannot be less than 1'}, status=status.HTTP_400_BAD_REQUEST)
+
+        product = get_object_or_404(Product, id=product_id, pharmacy_id=pharmacy_id)
+        
+        # Ensure enough stock is available
+        if product.stock_level < new_quantity:
+            return Response({'error': f'The product stock level is low: {product.stock_level}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        cart[str(product_id)]['quantity'] = new_quantity
+        request.session['cart'] = cart
+
+        return Response({'message': 'Quantity updated', 'cart': cart}, status=status.HTTP_200_OK)
 
     # Remove product from cart (optional)
     def delete(self, request, pharmacy_id, product_id):
