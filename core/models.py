@@ -3,7 +3,7 @@ from users.models import Pharmacy, Supplier, User
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.utils import timezone
-
+from django.db.models import UniqueConstraint
 # Create your models here.
 
 DOSAGE_FORMS = [
@@ -35,68 +35,71 @@ DOSAGE_FORMS = [
 ]
 
 
-class Medication(models.Model):
+class Product(models.Model):
     name = models.CharField(max_length=255)
-    generic_name = models.CharField(max_length=255, blank=True, null=True)
-    manufacturer = models.CharField(max_length=255)
-    dosage_form = models.CharField(max_length=50, choices=DOSAGE_FORMS)
-    strength = models.CharField(max_length=100) 
-    active_ingredients = models.TextField(blank=True, null=True)
+    product_type = models.CharField(max_length=50)
     barcode = models.CharField(max_length=100, unique=True, blank=True, null=True, validators=[
         RegexValidator(regex='^\\d+$', message='Barcode must be numeric.')
     ])
 
-    rxnorm_code = models.CharField(max_length=50, blank=True, null=True)
 
+    
     def __str__(self):
         return self.name
 
+class Medication(Product):
+    generic_name = models.CharField(max_length=255, blank=True, null=True)
+    manufacturer = models.CharField(max_length=255)
+    dosage_form = models.CharField(max_length=50, choices=DOSAGE_FORMS)
+    strength = models.CharField(max_length=100)
+    active_ingredients = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.name} [{self.generic_name}] - {self.dosage_form} - {self.strength}"
+
     class Meta:
-        unique_together = ('name', 'manufacturer', 'dosage_form', 'strength')
+        unique_together = ('generic_name', 'manufacturer', 'dosage_form', 'strength')
     
-class Product(models.Model):
+class Cosmetic(Product):
+    brand = models.CharField(max_length=200)
+    type = models.CharField(max_length=100)
+    ingredients = models.TextField(blank=True)
+
+class PharmacyProduct(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     pharmacy = models.ForeignKey(Pharmacy, on_delete=models.CASCADE)
-    medication = models.ForeignKey(Medication, on_delete=models.CASCADE)
     price = models.PositiveBigIntegerField()
     expiration_date = models.DateField()
     stock_level = models.PositiveIntegerField()
-    supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
+    # supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('product', 'pharmacy')
 
     def __str__(self):
-        return f"{self.medication.name} - {self.price} ({self.stock_level})"
-    
+        return f"{self.product.name} at {self.pharmacy.name} - {self.price} ({self.stock_level})"
+
     def clean(self):
-        if self.expiration_date.date() < timezone.now().date():
+        if self.expiration_date and self.expiration_date < timezone.now().date():
             raise ValidationError('Expiration date cannot be in the past.')
-
-    @classmethod
-    def get_products_by_barcode(cls, pharmacy, barcode):
-        try:
-            medication = Medication.objects.get(barcode=barcode)
-            products = cls.objects.filter(medication=medication, pharmacy=pharmacy)
-        except Medication.DoesNotExist:
-            products = cls.objects.none()
-        except Exception as e:
-            products = cls.objects.none()
-
-        return products
 
 class Sale(models.Model):
     pharmacy = models.ForeignKey(Pharmacy, on_delete=models.CASCADE,related_name='sales')
-    cashier = models.ForeignKey(User, on_delete=models.CASCADE)
+    pharmacist = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     total_amount = models.PositiveIntegerField()
     discount = models.PositiveIntegerField()
     payment_received  = models.PositiveIntegerField()
 
     def __str__(self):
-        return f"Sale #{self.id} - {self.total_amount} by {self.cashier.username} at {self.created_at.strftime('%d/%m/%Y, %H:%M:%S')}"
+        return f"Sale #{self.id} - {self.total_amount} by {self.pharmacist.username} at {self.created_at.strftime('%d/%m/%Y, %H:%M:%S')}"
 
 class SaleItem(models.Model):
     sale = models.ForeignKey(Sale, related_name='items', on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(PharmacyProduct, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     price = models.PositiveIntegerField()
 
+    @property
     def total_price(self):
         return self.quantity * self.price
