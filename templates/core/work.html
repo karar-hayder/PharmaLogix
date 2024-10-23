@@ -65,6 +65,7 @@
 
 {% block scripts %}
 <script>
+    const audio = new Audio('{% static "success-sound.mp3" %}');
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -268,45 +269,5 @@
     updateCartView();
 </script>
 <script src="https://unpkg.com/@zxing/library@latest"></script>
-
-<script>
-    const codeReader = new ZXing.BrowserMultiFormatReader();
-    const videoElement = document.getElementById('video');
-    const resultElement = document.getElementById('scanned-barcode');
-
-
-    function startScanning() {
-        const audio = new Audio('{% static "success-sound.mp3" %}');
-        codeReader.decodeFromVideoDevice(null, videoElement, (result, err) => {
-            if (result && result.text.length >= 10) {            
-                if (result.text !== lastScannedCode) {
-                    lastScannedCode = result.text;
-                    resultElement.innerText = `Scanned: ${result.text}`;
-                    audio.play();
-                    fetch(`/api/pharmacy/${pharmacyId}/search/?barcode=${encodeURIComponent(result.text)}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            console.log(data)
-                            item = data[0];
-                            addToCart(item.id,1)
-                        })
-                        .catch(error => console.error('Error fetching search results:', error));
-        
-                }
-            }
-            if (err && !(err instanceof ZXing.NotFoundException)) {
-                console.error(err);
-            }
-        });
-    }
-        
-        startScanning();
-        
-</script>
-
+<script src="{% static 'core/js/barcodescanner.js' %}"></script>
 {% endblock scripts %}
