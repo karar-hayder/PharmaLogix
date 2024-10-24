@@ -1,136 +1,152 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from .models import Medication, Product, Sale, SaleItem
+from django.utils import timezone
+from datetime import timedelta
+from .models import Medication, Cosmetic, Product, PharmacyProduct, Sale, SaleItem
 from users.models import Pharmacy, Supplier, User
 from django.utils import timezone
 
-
-class MedicationModelTest(TestCase):
-
-    def setUp(self):
-        self.pharmacy = Pharmacy.objects.create(name='Test Pharmacy', owner=User.objects.create(username='owner'))
-        self.supplier = Supplier.objects.create(name='Test Supplier', contact_info='123-456-7890')
-        self.medication = Medication.objects.create(
-            name='Aspirin',
-            generic_name='Acetylsalicylic Acid',
-            manufacturer='Test Manufacturer',
-            dosage_form='tablet',
-            strength='500mg',
-            active_ingredients='Acetylsalicylic Acid',
-            barcode='123456789012'
-        )
-
-    def test_medication_creation(self):
-        self.assertEqual(self.medication.name, 'Aspirin')
-        self.assertEqual(self.medication.strength, '500mg')
-
-    def test_medication_str(self):
-        self.assertEqual(str(self.medication), 'Aspirin')
-
-
+### Product
 class ProductModelTest(TestCase):
 
+    def test_create_product(self):
+        product = Product.objects.create(
+            name="Test Product", 
+            product_type="medication", 
+            barcode="123456789012"
+        )
+        self.assertEqual(str(product), "Test Product")
+
+    def test_create_medication(self):
+        medication = Medication.objects.create(
+            name="Test Medication", 
+            generic_name="Generic", 
+            manufacturer="Test Manufacturer", 
+            dosage_form="tablet", 
+            strength="500mg",
+            active_ingredients="Ingredient 1, Ingredient 2"
+        )
+        self.assertEqual(str(medication), "Test Medication [Generic] - tablet - 500mg")
+
+    def test_create_cosmetic(self):
+        cosmetic = Cosmetic.objects.create(
+            name="Test Cosmetic", 
+            brand="Test Brand", 
+            type="Face Cream", 
+            ingredients="Ingredient 1, Ingredient 2"
+        )
+        self.assertEqual(str(cosmetic), "Test Cosmetic")
+
+    def test_medication_unique_constraint(self):
+        Medication.objects.create(
+            name="Test Medication", 
+            generic_name="Generic", 
+            manufacturer="Test Manufacturer", 
+            dosage_form="tablet", 
+            strength="500mg"
+        )
+        with self.assertRaises(ValidationError):
+            medication = Medication(
+                name="Test Medication", 
+                generic_name="Generic", 
+                manufacturer="Test Manufacturer", 
+                dosage_form="tablet", 
+                strength="500mg"
+            )
+            medication.full_clean()
+
+## PharmacyProduct
+
+class PharmacyProductModelTest(TestCase):
+
     def setUp(self):
-        self.pharmacy = Pharmacy.objects.create(name='Test Pharmacy', owner=User.objects.create(username='owner'))
-        self.supplier = Supplier.objects.create(name='Test Supplier', contact_info='123-456-7890')
+        self.pharmacy = Pharmacy.objects.create(name="Test Pharmacy")
         self.medication = Medication.objects.create(
-            name='Aspirin',
-            manufacturer='Test Manufacturer',
-            dosage_form='tablet',
-            strength='500mg',
-            active_ingredients='Acetylsalicylic Acid',
-            barcode='123456789012'
-        )
-        self.product = Product.objects.create(
-            pharmacy=self.pharmacy,
-            medication=self.medication,
-            price=1000,
-            expiration_date=timezone.now() + timezone.timedelta(days=30),
-            stock_level=50,
-            supplier=self.supplier
+            name="Test Medication", 
+            generic_name="Generic", 
+            manufacturer="Test Manufacturer", 
+            dosage_form="tablet", 
+            strength="500mg"
         )
 
-    def test_product_creation(self):
-        self.assertEqual(self.product.pharmacy, self.pharmacy)
-        self.assertEqual(self.product.price, 1000)
-        self.assertTrue(self.product.expiration_date > timezone.now())
-        self.assertEqual(self.product.supplier, self.supplier)
+    def test_create_pharmacy_product(self):
+        pharmacy_product = PharmacyProduct.objects.create(
+            product=self.medication, 
+            pharmacy=self.pharmacy, 
+            price=100, 
+            expiration_date=timezone.now().date() + timedelta(days=30), 
+            stock_level=50
+        )
+        self.assertEqual(str(pharmacy_product), "Test Medication at Test Pharmacy - 100 (50)")
 
-    def test_product_expiration_date_validation(self):
-        product = Product(
-            pharmacy=self.pharmacy,
-            medication=self.medication,
-            price=1000,
-            expiration_date=timezone.now() - timezone.timedelta(days=1),
+    def test_expired_product_validation(self):
+        expired_date = timezone.now().date() - timedelta(days=1)
+        pharmacy_product = PharmacyProduct(
+            product=self.medication, 
+            pharmacy=self.pharmacy, 
+            price=100, 
+            expiration_date=expired_date, 
             stock_level=50
         )
         with self.assertRaises(ValidationError):
-            product.clean()
+            pharmacy_product.clean()
 
-    def test_product_str(self):
-        self.assertEqual(str(self.product), 'Aspirin - 1000 (50)')
+    def test_unique_constraint(self):
+        PharmacyProduct.objects.create(
+            product=self.medication, 
+            pharmacy=self.pharmacy, 
+            price=100, 
+            expiration_date=timezone.now().date() + timedelta(days=30), 
+            stock_level=50
+        )
 
+        with self.assertRaises(ValidationError):
+            pharmacy_product = PharmacyProduct(
+                product=self.medication, 
+                pharmacy=self.pharmacy, 
+                price=200, 
+                expiration_date=timezone.now().date() + timedelta(days=60), 
+                stock_level=30
+            )
+            pharmacy_product.full_clean()
+
+## Sale and SaleItem
 
 class SaleModelTest(TestCase):
 
     def setUp(self):
-        self.pharmacy = Pharmacy.objects.create(name='Test Pharmacy', owner=User.objects.create(username='owner'))
-        self.user = User.objects.create(username='cashier', password='password')
-        self.sale = Sale.objects.create(
-            pharmacy=self.pharmacy,
-            cashier=self.user,
-            total_amount=10000,
-            discount=1000,
-            payment_received=9000
+        self.pharmacy = Pharmacy.objects.create(name="Test Pharmacy")
+        self.user = User.objects.create_user(username="testuser", password="password")
+        self.pharmacy_product = PharmacyProduct.objects.create(
+            product=Product.objects.create(name="Test Product", product_type="medication"),
+            pharmacy=self.pharmacy, 
+            price=100, 
+            expiration_date=timezone.now().date() + timedelta(days=60), 
+            stock_level=100
         )
 
-    def test_sale_creation(self):
-        self.assertEqual(self.sale.total_amount, 10000)
-        self.assertEqual(self.sale.discount, 1000)
-
-    def test_sale_str(self):
-        self.assertEqual(str(self.sale), f'Sale #{self.sale.id} - 10000 by {self.user.username} at {self.sale.created_at.strftime("%d/%m/%Y, %H:%M:%S")}')
-
-
-class SaleItemModelTest(TestCase):
-
-    def setUp(self):
-        self.pharmacy = Pharmacy.objects.create(name='Test Pharmacy', owner=User.objects.create(username='owner'))
-        self.supplier = Supplier.objects.create(name='Test Supplier', contact_info='123-456-7890')
-        self.medication = Medication.objects.create(
-            name='Aspirin',
-            manufacturer='Test Manufacturer',
-            dosage_form='tablet',
-            strength='500mg',
-            active_ingredients='Acetylsalicylic Acid',
-            barcode='123456789012'
+    def test_create_sale(self):
+        sale = Sale.objects.create(
+            pharmacy=self.pharmacy, 
+            pharmacist=self.user, 
+            total_amount=500, 
+            discount=50, 
+            payment_received=450
         )
-        self.product = Product.objects.create(
-            pharmacy=self.pharmacy,
-            medication=self.medication,
-            price=1000,
-            expiration_date=timezone.now() + timezone.timedelta(days=30),
-            stock_level=50,
-            supplier=self.supplier
-        )
-        self.sale = Sale.objects.create(
-            pharmacy=self.pharmacy,
-            cashier=User.objects.create(username='cashier', password='password'),
-            total_amount=10000,
-            discount=1000,
-            payment_received=9000
-        )
-        self.sale_item = SaleItem.objects.create(
-            sale=self.sale,
-            product=self.product,
-            quantity=2,
-            price=1000
-        )
+        self.assertEqual(str(sale), f"Sale #{sale.id} - 500 by testuser at {sale.created_at.strftime('%d/%m/%Y, %H:%M:%S')}")
 
-    def test_sale_item_creation(self):
-        self.assertEqual(self.sale_item.quantity, 2)
-        self.assertEqual(self.sale_item.price, 1000)
-
-    def test_sale_item_total_price(self):
-        self.assertEqual(self.sale_item.total_price(), 2000)
-
+    def test_create_sale_item(self):
+        sale = Sale.objects.create(
+            pharmacy=self.pharmacy, 
+            pharmacist=self.user, 
+            total_amount=500, 
+            discount=50, 
+            payment_received=450
+        )
+        sale_item = SaleItem.objects.create(
+            sale=sale, 
+            product=self.pharmacy_product, 
+            quantity=5, 
+            price=100
+        )
+        self.assertEqual(sale_item.total_price, 500)  # 5 * 100
