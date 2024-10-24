@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'core/css/pharmacist_products_add.css' %}">
+{% endblock head %}
+
+{% block content %}
+<div class="container">
+    <h1>Create Medication or Cosmetic</h1>
+
+    <div class="form-container">
+        <form id="product-pharmacy-form">
+            <input type="hidden" id="pharmacy-id" name="pharmacy_id" value="{{ pharmacy.id }}">
+
+            <div class="product-type-selection">
+                <label for="product_type">Select Product Type:</label>
+                <select id="product-type" name="product[product_type]" required>
+                    <option value="">Select</option>
+                    <option value="medication">Medication</option>
+                    <option value="cosmetic">Cosmetic</option>
+                </select>
+            </div>
+
+            <!-- Medication form -->
+            <div id="medication-form" class="product-form" style="display:none;">
+                <h2>Medication Information</h2>
+                <label for="medication-name">Name:</label>
+                <input type="text" id="medication-name" name="product[medication_name]" required><br>
+
+                <label for="generic_name">Generic Name:</label>
+                <input type="text" id="generic-name" name="product[generic_name]"><br>
+
+                <label for="manufacturer">Manufacturer:</label>
+                <input type="text" id="manufacturer" name="product[manufacturer]" required><br>
+
+                <label for="dosage-form">Dosage Form:</label>
+                <select id="dosage-form" name="product[dosage_form]" required>
+                    <option value="">Select Dosage Form</option>
+                    {% for form in dosage_forms %}
+                    <option value="{{ form.0 }}">{{ form.1 }}</option>
+                    {% endfor %}
+                </select><br>
+
+                <label for="strength">Strength:</label>
+                <input type="text" id="strength" name="product[strength]" required><br>
+
+                <label for="active-ingredients">Active Ingredients:</label>
+                <input type="text" id="active-ingredients" name="product[active_ingredients]"><br>
+            </div>
+
+            <!-- Cosmetic form -->
+            <div id="cosmetic-form" class="product-form" style="display:none;">
+                <h2>Cosmetic Information</h2>
+                <label for="cosmetic-name">Name:</label>
+                <input type="text" id="cosmetic-name" name="product[cosmetic_name]" required><br>
+
+                <label for="brand">Brand:</label>
+                <input type="text" id="brand" name="product[brand]" required><br>
+
+                <label for="type">Type:</label>
+                <input type="text" id="type" name="product[type]" required><br>
+
+                <label for="ingredients">Ingredients:</label>
+                <input type="text" id="ingredients" name="product[ingredients]"><br>
+            </div>
+
+            <h2>Pharmacy Product Information</h2>
+            <label for="price">Price:</label>
+            <input type="number" id="price" name="pharmacy_product[price]" required><br>
+
+            <label for="expiration-date">Expiration Date:</label>
+            <input type="date" id="expiration-date" name="pharmacy_product[expiration_date]" required><br>
+
+            <label for="stock-level">Stock Level:</label>
+            <input type="number" id="stock-level" name="pharmacy_product[stock_level]" required><br>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('product-type').addEventListener('change', function () {
+        const selectedType = this.value;
+
+        
+        const medicationForm = document.getElementById('medication-form');
+        const medicationFields = medicationForm.querySelectorAll('input, select');
+        
+        
+        const cosmeticForm = document.getElementById('cosmetic-form');
+        const cosmeticFields = cosmeticForm.querySelectorAll('input, select');
+
+        if (selectedType === 'medication') {
+            
+            medicationForm.style.display = 'block';
+            cosmeticForm.style.display = 'none';
+
+            
+            medicationFields.forEach(field => field.required = true);
+            cosmeticFields.forEach(field => field.required = false);
+
+        } else if (selectedType === 'cosmetic') {
+            
+            cosmeticForm.style.display = 'block';
+            medicationForm.style.display = 'none';
+
+            
+            cosmeticFields.forEach(field => field.required = true);
+            medicationFields.forEach(field => field.required = false);
+
+        } else {
+            
+            medicationForm.style.display = 'none';
+            cosmeticForm.style.display = 'none';
+
+            
+            medicationFields.forEach(field => field.required = false);
+            cosmeticFields.forEach(field => field.required = false);
+        }
+    });
+
+    document.getElementById('product-pharmacy-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const jsonData = {};
+    
+        
+        const selectedType = document.getElementById('product-type').value;
+        let productName = '';
+    
+        if (selectedType === 'medication') {
+            const medicationName = document.getElementById('medication-name').value.trim();
+            if (medicationName) {
+                productName = medicationName; 
+            } else {
+                alert("Please enter a name for the medication.");
+                return; 
+            }
+        } else if (selectedType === 'cosmetic') {
+            const cosmeticName = document.getElementById('cosmetic-name').value.trim();
+            if (cosmeticName) {
+                productName = cosmeticName; 
+            } else {
+                alert("Please enter a name for the cosmetic.");
+                return; 
+            }
+        }
+    
+        
+        jsonData['product'] = {
+            product_type: selectedType,  
+            medication_name: formData.get('product[medication_name]') || '',  
+            generic_name: formData.get('product[generic_name]') || '',
+            manufacturer: formData.get('product[manufacturer]') || '',
+            dosage_form: formData.get('product[dosage_form]') || '',
+            strength: formData.get('product[strength]') || '',
+            active_ingredients: formData.get('product[active_ingredients]') || '',
+            cosmetic_name: formData.get('product[cosmetic_name]') || '',
+            brand: formData.get('product[brand]') || '',
+            type: formData.get('product[type]') || '',
+            ingredients: formData.get('product[ingredients]') || '',
+            name: productName 
+        };
+    
+        
+        jsonData['pharmacy_product'] = {
+            price: formData.get('pharmacy_product[price]'),
+            expiration_date: formData.get('pharmacy_product[expiration_date]'),
+            stock_level: formData.get('pharmacy_product[stock_level]')
+        };
+    
+        
+        fetch('/api/pharmacy/{{ pharmacy.id }}/add/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(jsonData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+            } else {
+                alert('Product and PharmacyProduct created successfully!');
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred.');
+        });
+    });
+    
+</script>
+{% endblock %}

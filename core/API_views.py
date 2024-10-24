@@ -53,7 +53,6 @@ class CosmeticViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             cosmetic = serializer.save()
             return Response(CosmeticSerializer(cosmetic).data, status=status.HTTP_201_CREATED)
-        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, *args, **kwargs):
@@ -83,9 +82,18 @@ class ProductViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             product = serializer.save()
             return Response(ProductSerializer(product).data, status=status.HTTP_201_CREATED)
-        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def get_queryset(self):
+        queryset = Product.objects.all()
+        name = self.request.query_params.get('name', None)
+        if name:
+            queryset = queryset.filter(
+                Q(name__icontains=name) |
+                Q(medication__generic_name__icontains=name) |
+                Q(cosmetic__brand__icontains=name)
+            )
+        return queryset
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -148,7 +156,7 @@ class CartAPIView(APIView):
         cart = request.session.get('cart', {})
         cart_items = []
         for product_id, item in cart.items():
-            pharmacy_product = get_object_or_404(PharmacyProduct, product_id=product_id, pharmacy=pharmacy)
+            pharmacy_product = get_object_or_404(PharmacyProduct, id=product_id, pharmacy=pharmacy)
             product_serializer = PharmacyProductSerializer(pharmacy_product).data
 
             cart_items.append({
@@ -163,9 +171,8 @@ class CartAPIView(APIView):
     # Post request to add product to cart
     def post(self, request, pharmacy_id, product_id):
         pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
-        pharmacy_product = get_object_or_404(PharmacyProduct, product_id=product_id, pharmacy=pharmacy)
+        pharmacy_product = get_object_or_404(PharmacyProduct, id=product_id, pharmacy=pharmacy)
         cart = request.session.get('cart', {})
-
         quantity = int(request.data.get('quantity', 1))
         if str(product_id) in cart:
             quantity += cart[str(product_id)]['quantity']
@@ -191,7 +198,7 @@ class CartAPIView(APIView):
         if new_quantity < 1:
             return Response({'error': 'Quantity cannot be less than 1'}, status=status.HTTP_400_BAD_REQUEST)
 
-        pharmacy_product = get_object_or_404(PharmacyProduct, product_id=product_id, pharmacy_id=pharmacy_id)
+        pharmacy_product = get_object_or_404(PharmacyProduct, id=product_id, pharmacy_id=pharmacy_id)
 
         if pharmacy_product.stock_level < new_quantity:
             return Response({'error': f'The product stock level is low: {pharmacy_product.stock_level}'}, status=status.HTTP_400_BAD_REQUEST)
@@ -305,3 +312,55 @@ class PharmacyProductSearchAPIView(APIView):
         
         serializer = PharmacyProductSerializer(products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK if products else status.HTTP_204_NO_CONTENT)
+
+class CreateProductAndPharmacyProductView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pharmacy_id,*args, **kwargs):
+        product_data = request.data.get('product')
+        pharmacy_product_data = request.data.get('pharmacy_product')
+
+        pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
+
+        if not (request.user.is_superuser or pharmacy.owner == request.user):
+            return Response({'error': 'You do not have permission to add products to this pharmacy.'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        product_type = product_data.get('product_type')
+
+        if product_type == 'medication':
+            medication_serializer = MedicationSerializer(data=product_data)
+            if medication_serializer.is_valid():
+                medication = medication_serializer.save()
+                return self.save_pharmacy_product(medication.id, pharmacy_id, pharmacy_product_data)
+
+        elif product_type == 'cosmetic':
+            cosmetic_serializer = CosmeticSerializer(data=product_data)
+            if cosmetic_serializer.is_valid():
+                cosmetic = cosmetic_serializer.save()
+                return self.save_pharmacy_product(cosmetic.id, pharmacy_id, pharmacy_product_data)
+
+        return Response({'error': 'Invalid product type.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def save_pharmacy_product(self, product_id, pharmacy_id, pharmacy_product_data):
+        """Save the PharmacyProduct instance manually to bypass serializer issues."""
+        try:
+            pharmacy_product = PharmacyProduct(
+                product_id=product_id,
+                pharmacy_id=pharmacy_id,
+                price=pharmacy_product_data['price'],
+                expiration_date=pharmacy_product_data['expiration_date'],
+                stock_level=pharmacy_product_data['stock_level']
+            )
+            
+            pharmacy_product.full_clean()
+            pharmacy_product.save()
+            
+            return Response({'message': 'Product and PharmacyProduct created successfully!'},
+                            status=status.HTTP_201_CREATED)
+        
+        except ValidationError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': 'An error occurred while saving the PharmacyProduct.'}, 
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)

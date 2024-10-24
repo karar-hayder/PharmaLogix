@@ -1,0 +1,101 @@
+@import '../../base/css/variables.scss';
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: $spacing-large;
+    background-color: $white-color;
+    box-shadow: 0 2px 10px $shadow-color;
+    border-radius: 8px;
+}
+
+h1 {
+    text-align: center;
+    color: $primary-color;
+    margin-bottom: $spacing-large;
+}
+
+.form-container {
+    padding: $spacing-large;
+    border: 1px solid $shadow-color;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+.product-type-selection {
+    margin-bottom: $spacing-large;
+}
+
+label {
+    display: block;
+    margin-bottom: $spacing-small;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select {
+    width: 100%;
+    padding: $spacing-small;
+    border: 1px solid $shadow-color;
+    border-radius: 4px;
+    font-size: $font-size-base;
+    margin-bottom: $spacing-large;
+    transition: border 0.3s;
+
+    &:focus {
+        border-color: $primary-color;
+        outline: none;
+        box-shadow: 0 0 5px $shadow-hover;
+    }
+}
+
+.product-form {
+    padding: $spacing-large;
+    border: 1px solid $shadow-color;
+    border-radius: 8px;
+    background-color: $background-color;
+    margin-bottom: $spacing-large;
+}
+
+button[type="submit"] {
+    background-color: $primary-color;
+    color: $white-color;
+    border: none;
+    padding: $spacing-small $spacing-large;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: $font-size-base;
+    transition: background-color 0.3s;
+
+    &:hover {
+        background-color: $hover-color;
+    }
+}
+
+.product-form h2 {
+    color: $secondary-color;
+    margin-bottom: $spacing-small;
+}
+
+#search-results {
+    margin-top: $spacing-large;
+
+    p {
+        margin: $spacing-small 0;
+    }
+
+    .edit-button {
+        background-color: $link-color;
+        color: $white-color;
+        border: none;
+        padding: $spacing-small $spacing-large;
+        border-radius: 4px;
+        cursor: pointer;
+
+        &:hover {
+            background-color: $link-hover-color;
+        }
+    }
+}

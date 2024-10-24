@@ -210,30 +210,33 @@
     $('#search-button').on('click', function() {
         const searchQuery = $('#search').val();
         $.ajax({
-            url: '/api/medication/search/',
+            url: '/api/product/', 
             method: 'GET',
             data: { name: searchQuery },
             success: function(data) {
                 $('#search-results').empty();
                 if (data.length > 0) {
-                    data.forEach(medication => {
+                    data.forEach(product => {
                         $('#search-results').append(`
                             <div>
-                                <p>${medication.name} [${medication.generic_name}] {${medication.manufacturer}} (${medication.barcode})</p>
-                                <button class="edit-button" data-pk="${medication.id}">Edit</button>
+                                <p>${product.name} (${product.product_type})</p>
+                                ${product.medication ? `<p>Generic Name: ${product.medication.generic_name}</p>` : ''}
+                                ${product.cosmetic ? `<p>Brand: ${product.cosmetic.brand}</p>` : ''}
+                                <button class="edit-button" data-pk="${product.id}">Edit</button>
                                 <hr>
                             </div>
                         `);
                     });
                 } else {
-                    $('#search-results').append('<p>No medications found.</p>');
+                    $('#search-results').append('<p>No products found.</p>');
                 }
             },
             error: function() {
-                alert('Error searching for medications');
+                alert('Error searching for products');
             }
         });
     });
+    
 
     $(document).on('click', '.edit-button', function() {
         const medicationPk = $(this).data('pk');
@@ -348,7 +351,7 @@
     const barcodeCosCreate = document.getElementById('create-cosmetic-barcode'); 
 
     function sendBarcode(code) {
-        fetch(`/api/medication/search/?barcode=${encodeURIComponent(code)}`) 
+        fetch(`api/medication/?barcode=${encodeURIComponent(code)}`) 
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');

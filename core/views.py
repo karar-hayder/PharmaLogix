@@ -49,9 +49,9 @@ class StaffProductsAdd(LoginRequiredMixin,UserPassesTestMixin,TemplateView):
         context["dosage_forms"] = DOSAGE_FORMS
         return context
     
-        
-class AddProductsView(LoginRequiredMixin,UserPassesTestMixin,TemplateView):
-    template_name = 'core/med_add.html'
+### ADD a search bar to search for already added products
+class PharmacistProductAdd(LoginRequiredMixin,UserPassesTestMixin,TemplateView):
+    template_name = 'core/pharmacist_products_add.html'
     
     def test_func(self) -> bool | None:
         pharmacy_id = self.kwargs.get('pharmacy_id')
@@ -63,6 +63,7 @@ class AddProductsView(LoginRequiredMixin,UserPassesTestMixin,TemplateView):
         pharmacy_id = self.kwargs.get('pharmacy_id')
         pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
         context['pharmacy'] = pharmacy
+        context["dosage_forms"] = DOSAGE_FORMS
         return context
     
 class SalesListView(LoginRequiredMixin,UserPassesTestMixin,ListView):
