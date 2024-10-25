@@ -82,19 +82,48 @@
     }
 
     const pharmacyId = "{{ pharmacy.id }}";  
-
-    let debounceTimeout;
-
-    document.getElementById('product-search').addEventListener('keyup', function() {
-        clearTimeout(debounceTimeout);
-        debounceTimeout = setTimeout(searchMedications, 300);
-    });
-
-    function searchMedications() {
-        const query = document.getElementById('product-search').value;
     
+    document.getElementById('product-search').focus();
+    let debounceTimeout;
+    let inputTimestamps = [];
+    const barcodeThreshold = 100;
+    const barcodeMinTime = 200;
+    const barcodeTotalTime = 3000;
+    const minimumBarcodeLength = 10;
+    const barcodeDelay = 500;
+    document.getElementById('product-search').addEventListener('keyup', function(event) {
+        const inputField = document.getElementById('product-search');
+        const query = inputField.value;
+
+        const currentTime = new Date().getTime();
+        inputTimestamps.push(currentTime);
+
+        const startTime = inputTimestamps[0];
+        const elapsedTime = currentTime - startTime;    
+        const intervals = inputTimestamps.slice(1).map((time, i) => time - inputTimestamps[i]);
+        const isFastInput = intervals.every(interval => interval < barcodeThreshold);
+
+        if (isFastInput && query.length >= minimumBarcodeLength && elapsedTime >= barcodeMinTime && elapsedTime < barcodeTotalTime) {
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => {
+                audio.play();
+                sendBarcode(query); 
+                inputField.value = '';
+                inputTimestamps = [];
+            }, barcodeDelay);
+            return;
+        }
+
+        if (inputTimestamps.length > 1 && (currentTime - inputTimestamps[inputTimestamps.length - 2] > barcodeThreshold)) {
+            inputTimestamps = [currentTime];
+        }
+
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(() => searchMedications(query), 300);
+    });
+    function searchMedications(query) {
         if (query.length > 2) {
-            fetch(`/api/pharmacy/${pharmacyId}/search/?q=${encodeURIComponent(query)}`) 
+            fetch(`/api/pharmacy/${pharmacyId}/search/?q=${encodeURIComponent(query)}`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -104,12 +133,12 @@
                 .then(data => {
                     const searchResults = document.getElementById('search-results');
                     searchResults.innerHTML = '';
-    
+
                     data.forEach(item => {
-                        console.log(item)
+                        console.log(item);
                         const resultItem = document.createElement('div');
                         resultItem.classList.add('search-item');
-    
+
                         let productInfo = '';
                         if (item.product.product_type === 'medication') {
                             productInfo = `
@@ -212,6 +241,7 @@
                 });
 
                 document.getElementById('total-price').innerText = data.total_price;
+                document.getElementById('product-search').focus();
             })
             .catch(error => console.error('Error updating cart view:', error));
     }
