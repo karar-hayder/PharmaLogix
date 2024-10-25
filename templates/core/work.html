@@ -83,8 +83,11 @@
 
     const pharmacyId = "{{ pharmacy.id }}";  
 
+    let debounceTimeout;
+
     document.getElementById('product-search').addEventListener('keyup', function() {
-        searchMedications();
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(searchMedications, 300);
     });
 
     function searchMedications() {
