@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.utils import timezone
 from django.db.models import UniqueConstraint
+from django.core.cache import cache
 # Create your models here.
 
 
@@ -23,7 +24,14 @@ class Pharmacy(models.Model):
 
     def __str__(self):
         return self.name
-
+    
+    @property
+    def subscription(self):
+        sub : Subscription = cache.get(f'{self.pk}-sub')
+        if not sub:
+            sub = self.subscriptions.last()
+            cache.set(f"{self.pk}-sub",sub,60*60)
+        return sub
     class Meta:
         verbose_name = "Pharmacy"
         verbose_name_plural = "Pharmacies"
@@ -51,7 +59,7 @@ class SubscriptionPlan(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.name} - {self.duration_days} days - X{self.price}X {self.total_price} IQD (discount {self.discount_percentage}%)"
+        return f"{self.name} - {self.duration_days} days - {self.total_price} IQD (discount {self.discount_percentage}% * {self.price})"
     
     def clean(self):
         if not (0 <= self.discount_percentage <= 100):
