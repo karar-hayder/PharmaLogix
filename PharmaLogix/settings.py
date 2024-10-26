@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'PharmaLogix.wsgi.application'
 DATABASES = {
     'default': {
         'NAME':os.environ['DB_NAME'],
-        'ENGINE':'django.db.backends.postgresql',
+        'ENGINE':'django.db.backends.postgresql_psycopg2',
         'HOST':os.environ['DB_HOST'],
         'PORT':os.environ['DB_PORT'],
         'USER':os.environ['DB_USER'],
