@@ -36,7 +36,7 @@ class PharmacyProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PharmacyProduct
-        fields = ['id', 'product', 'pharmacy_id', 'price', 'stock_level']
+        fields = ['id', 'product', 'pharmacy_id', 'supplier_price', 'price', 'expiration_date', 'stock_level', 'supplier']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -46,20 +46,20 @@ class PharmacyProductSerializer(serializers.ModelSerializer):
 
         if isinstance(product, Medication):
             representation['medication'] = {
-                'generic_name': product.medication.generic_name,
-                'manufacturer': product.medication.manufacturer,
-                'dosage_form': product.medication.dosage_form,
-                'strength': product.medication.strength,
+                'generic_name': product.generic_name,
+                'manufacturer': product.manufacturer,
+                'dosage_form': product.dosage_form,
+                'strength': product.strength,
+                'active_ingredients': product.active_ingredients,
             }
         elif isinstance(product, Cosmetic):
             representation['cosmetic'] = {
-                'brand': product.cosmetic.brand,
-                'type': product.cosmetic.type,
-                'ingredients': product.cosmetic.ingredients,
+                'brand': product.brand,
+                'type': product.type,
+                'ingredients': product.ingredients,
             }
 
         return representation
-
 # class ProductSerializer(serializers.ModelSerializer):
 #     medication_name = serializers.CharField(source='medication.name', read_only=True)
 #     generic_name = serializers.CharField(source='medication.generic_name', read_only=True)

@@ -10,7 +10,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from .models import Medication, Cosmetic, Pharmacy, Product, PharmacyProduct, Sale, SaleItem
+from .models import Medication, Cosmetic, Pharmacy, Product, PharmacyProduct, Sale, SaleItem, Supplier
 from .serializers import MedicationSerializer, CosmeticSerializer, ProductSerializer, PharmacyProductSerializer, SaleSerializer
 
 
@@ -327,51 +327,80 @@ class CreateProductAndPharmacyProductView(APIView):
                             status=status.HTTP_403_FORBIDDEN)
 
         product_type = product_data.get('product_type')
-
         if product_type == 'medication':
-            return self.create_or_get_medication(product_data, pharmacy_id, pharmacy_product_data)
+            return self.create_or_get_medication(product_data, pharmacy, pharmacy_product_data)
 
         elif product_type == 'cosmetic':
-            return self.create_or_get_cosmetic(product_data, pharmacy_id, pharmacy_product_data)
+            return self.create_or_get_cosmetic(product_data, pharmacy, pharmacy_product_data)
 
         return Response({'error': 'Invalid product type.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    def create_or_get_medication(self, product_data, pharmacy_id, pharmacy_product_data):
+    def create_or_get_medication(self, product_data, pharmacy, pharmacy_product_data):
+        medication_defaults = {
+            'generic_name': product_data.get('generic_name'),
+            'manufacturer': product_data.get('manufacturer'),
+            'dosage_form': product_data.get('dosage_form'),
+            'strength': product_data.get('strength'),
+            'active_ingredients': product_data.get('active_ingredients'),
+            'product_type': 'medication',
+        }
+
         medication, created = Medication.objects.get_or_create(
             name=product_data.get('medication_name'),
-            defaults=product_data
+            defaults=medication_defaults
         )
 
         if created:
-            medication_serializer = MedicationSerializer(medication, data=product_data)
+            medication_serializer = MedicationSerializer(medication, data=medication_defaults)
             if not medication_serializer.is_valid():
                 return Response(medication_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            medication_serializer.save()
 
-        return self.save_pharmacy_product(medication.id, pharmacy_id, pharmacy_product_data)
+        return self.save_pharmacy_product(medication, pharmacy, pharmacy_product_data)
 
-    def create_or_get_cosmetic(self, product_data, pharmacy_id, pharmacy_product_data):
+    def create_or_get_cosmetic(self, product_data, pharmacy, pharmacy_product_data):
+        cosmetic_defaults = {
+            'brand': product_data.get('brand'),
+            'type': product_data.get('type'),
+            'ingredients': product_data.get('ingredients'),
+            'product_type': 'cosmetic',
+        }
+
         cosmetic, created = Cosmetic.objects.get_or_create(
             name=product_data.get('cosmetic_name'),
-            defaults=product_data
+            defaults=cosmetic_defaults
         )
 
         if created:
-            cosmetic_serializer = CosmeticSerializer(cosmetic, data=product_data)
+            cosmetic_serializer = CosmeticSerializer(cosmetic, data=cosmetic_defaults)
             if not cosmetic_serializer.is_valid():
                 return Response(cosmetic_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            cosmetic_serializer.save()
 
-        return self.save_pharmacy_product(cosmetic.id, pharmacy_id, pharmacy_product_data)
+        
+        return self.save_pharmacy_product(cosmetic, pharmacy, pharmacy_product_data)
 
-    def save_pharmacy_product(self, product_id, pharmacy_id, pharmacy_product_data):
+    def save_pharmacy_product(self, product, pharmacy, pharmacy_product_data):
         """Save the PharmacyProduct instance manually to bypass serializer issues."""
         try:
+            supplier_id = pharmacy_product_data.get('supplier')
+            supplier_price = int(pharmacy_product_data['supplier_price'])
+            price = int(pharmacy_product_data['price'])
+            expiration_date = pharmacy_product_data['expiration_date']
+            stock_level = int(pharmacy_product_data['stock_level'])
+            if supplier_id:
+                get_object_or_404(Supplier, id=supplier_id)
+
             pharmacy_product = PharmacyProduct(
-                product_id=product_id,
-                pharmacy_id=pharmacy_id,
-                price=pharmacy_product_data['price'],
-                expiration_date=pharmacy_product_data['expiration_date'],
-                stock_level=pharmacy_product_data['stock_level']
+                product=product,
+                pharmacy=pharmacy,
+                supplier_price=supplier_price,
+                price=price,
+                expiration_date=expiration_date,
+                stock_level=stock_level,
+                supplier_id=supplier_id,
             )
+
             pharmacy_product.full_clean()
             pharmacy_product.save()
 
@@ -379,7 +408,9 @@ class CreateProductAndPharmacyProductView(APIView):
                             status=status.HTTP_201_CREATED)
 
         except ValidationError as e:
+            print("Validation Error:", e)
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            print("Unexpected Error:", e)
             return Response({'error': 'An error occurred while saving the PharmacyProduct.'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
