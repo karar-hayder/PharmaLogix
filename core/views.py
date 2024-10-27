@@ -1,15 +1,18 @@
 from typing import Any
 from django.db.models.query import QuerySet
 from django.shortcuts import render
-from django.views.generic import TemplateView, UpdateView, ListView
+from django.views.generic import TemplateView, UpdateView, ListView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from .models import Pharmacy, Medication, Sale, SaleItem, models, DOSAGE_FORMS
+from .models import Pharmacy, Medication, Sale, SaleItem, models, DOSAGE_FORMS, Supplier
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from rest_framework import status
 from .serializers import MedicationSerializer
 import json
 from django.core.cache import cache
+from django.contrib import messages
+from django.urls import reverse_lazy
+
 # Create your views here.
 
 
@@ -122,4 +125,22 @@ class SalesListView(LoginRequiredMixin,UserPassesTestMixin,ListView):
         context["metrics"] = metrics
         return context
     
+class SupplierCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = Supplier
+    template_name = "core/add_supplier.html"
+    fields = ['name','office','contact_info']
     
+    def test_func(self):
+        pharmacy = self.get_pharmacy()
+        return pharmacy.owner == self.request.user
+
+    def get_pharmacy(self):
+        return get_object_or_404(Pharmacy, id=self.kwargs['pharmacy_id'])
+
+    def form_valid(self, form):
+        form.instance.pharmacy = self.get_pharmacy()
+        messages.success(self.request, "Supplier added successfully!")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("Work", kwargs={"pharmacy_id": self.kwargs['pharmacy_id']})

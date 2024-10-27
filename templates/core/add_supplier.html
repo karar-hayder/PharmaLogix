@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'core/css/pharmacist_products_add.css' %}">
+{% endblock head %}
+
+{% block content %}
+<h2>Add New Supplier</h2>
+<form action="" method="post">
+    {% csrf_token %}
+    
+    <label for="name">Supplier Name:</label>
+    <input type="text" id="name" name="name" maxlength="255" required>
+    
+    <label for="office">Office or Dispensary:</label>
+    <input type="text" id="office" name="office" maxlength="255" placeholder="Enter office or dispensary name">
+    
+    <label for="contact-info">Contact Information:</label>
+    <textarea id="contact-info" name="contact_info" rows="4" placeholder="Enter contact details (e.g., phone, email)"></textarea><br>
+    
+    <button type="submit">Add Supplier</button>
+</form>
+{% endblock %}
