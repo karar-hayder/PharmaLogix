@@ -66,6 +66,13 @@
             </div>
 
             <h2>Pharmacy Product Information</h2>
+            <label for="supplier">Supplier:</label>
+            <select id="supplier" name="pharmacy_product[supplier_id]" required>
+                {% for supplier in suppliers %}
+                    <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                {% endfor %}
+            </select>
+            <br>
             <label for="price">Price:</label>
             <input type="number" id="price" name="pharmacy_product[price]" required><br>
 

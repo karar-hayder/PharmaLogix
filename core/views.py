@@ -64,6 +64,7 @@ class PharmacistProductAdd(LoginRequiredMixin,UserPassesTestMixin,TemplateView):
         pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
         context['pharmacy'] = pharmacy
         context["dosage_forms"] = DOSAGE_FORMS
+        context["suppliers"] = pharmacy.suppliers.all()
         return context
     
 class SalesListView(LoginRequiredMixin,UserPassesTestMixin,ListView):
