@@ -10,12 +10,6 @@ from django.core.cache import cache
 # Create your models here.
 
 
-class Supplier(models.Model):
-    name = models.CharField(max_length=255)
-    contact_info = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return self.name
 
 class Pharmacy(models.Model):
     name = models.CharField('Name',max_length=255)
@@ -36,6 +30,16 @@ class Pharmacy(models.Model):
         verbose_name = "Pharmacy"
         verbose_name_plural = "Pharmacies"
 
+class Supplier(models.Model):
+    pharmacy = models.ForeignKey(Pharmacy,on_delete=models.SET_NULL,null=True,related_name='suppliers')
+    name = models.CharField(max_length=255)
+    office = models.CharField('Office or dispensary',max_length=255,blank=True)
+    contact_info = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
 class SubscriptionFeature(models.Model):
     name = models.CharField(max_length=255)
     tag = models.CharField(max_length=255)

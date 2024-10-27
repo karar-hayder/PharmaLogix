@@ -71,13 +71,13 @@ class PharmacyProduct(models.Model):
     price = models.PositiveBigIntegerField()
     expiration_date = models.DateField()
     stock_level = models.PositiveIntegerField()
-    # supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
+    supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
-        unique_together = ('product', 'pharmacy')
+        unique_together = ('product', 'pharmacy', 'supplier')
 
     def __str__(self):
-        return f"{self.product.name} at {self.pharmacy.name} - {self.price} ({self.stock_level})"
+        return f"{self.product.name} at {self.pharmacy.name} from {self.supplier.name} - {self.price} IQD ({self.stock_level})"
 
     def clean(self):
         if self.expiration_date and self.expiration_date < timezone.now().date():
