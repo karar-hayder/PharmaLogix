@@ -3,7 +3,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.db.models.query import QuerySet
 from django.shortcuts import render
-from django.views.generic import TemplateView, UpdateView, ListView, CreateView
+from django.views.generic import TemplateView, UpdateView, ListView, CreateView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from .models import Pharmacy, Medication, Sale, SaleItem, models, DOSAGE_FORMS, Supplier, PharmacyProduct
@@ -18,6 +18,23 @@ from django.urls import reverse_lazy
 
 # Create your views here.
 
+class BasePharmacyView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Base view for handling pharmacy-related views."""
+
+    def test_func(self) -> bool | None:
+        pharmacy_id = self.kwargs.get('pharmacy_id')
+        pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
+        return pharmacy in self.request.user.pharmacies.all() or self.request.user.is_superuser
+    
+    def get_pharmacy(self):
+        """Retrieve the pharmacy object."""
+        return get_object_or_404(Pharmacy, id=self.kwargs['pharmacy_id'])
+    
+    def get_context_data(self, **kwargs):
+        """Add the pharmacy to the context."""
+        context = super().get_context_data(**kwargs)
+        context['pharmacy'] = self.get_pharmacy()
+        return context
 
 class IndexView(TemplateView):
     template_name = 'base.html'
@@ -31,19 +48,8 @@ class Home(LoginRequiredMixin,TemplateView):
         context['pharmacies'] = self.request.user.pharmacies.all()
         return context
 
-class Work(LoginRequiredMixin,UserPassesTestMixin,TemplateView):
+class Work(BasePharmacyView,TemplateView):
     template_name = 'core/work.html'
-
-    def test_func(self) -> bool | None:
-        pharmacy_id = self.kwargs.get('pharmacy_id')
-        pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
-        return pharmacy in self.request.user.pharmacies.all()
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        pharmacy_id = self.kwargs.get('pharmacy_id')
-        pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
-        context['pharmacy'] = pharmacy
-        return context
 
 class StaffProductsAdd(LoginRequiredMixin,UserPassesTestMixin,TemplateView):
     template_name = 'core/staff_products_add.html'
@@ -56,36 +62,24 @@ class StaffProductsAdd(LoginRequiredMixin,UserPassesTestMixin,TemplateView):
         return context
     
 ### ADD a search bar to search for already added products
-class PharmacistProductAdd(LoginRequiredMixin,UserPassesTestMixin,TemplateView):
+class PharmacistProductAdd(BasePharmacyView,TemplateView):
     template_name = 'core/pharmacist_products_add.html'
     
-    def test_func(self) -> bool | None:
-        pharmacy_id = self.kwargs.get('pharmacy_id')
-        pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
-        return pharmacy in self.request.user.pharmacies.all()
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        pharmacy_id = self.kwargs.get('pharmacy_id')
-        pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
+        pharmacy = self.get_pharmacy()
         context['pharmacy'] = pharmacy
         context["dosage_forms"] = DOSAGE_FORMS
         context["suppliers"] = pharmacy.suppliers.all()
         return context
     
-class SalesListView(LoginRequiredMixin,UserPassesTestMixin,ListView):
+class SalesListView(BasePharmacyView,ListView):
     model = Sale
     template_name = 'core/sale_list.html'
     context_object_name = 'sales'
-
-    def test_func(self) -> bool | None:
-        pharmacy_id = self.kwargs.get('pharmacy_id')
-        pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
-        return pharmacy in self.request.user.pharmacies.all()
     
     def get_queryset(self):
-        pharmacy_id = self.kwargs.get('pharmacy_id')
-        pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
+        pharmacy = self.get_pharmacy()
         query = cache.get('sales_metrics')
         query = self.model.objects.filter(pharmacy=pharmacy).order_by('-created_at')
         return query
@@ -93,10 +87,10 @@ class SalesListView(LoginRequiredMixin,UserPassesTestMixin,ListView):
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         pharmacy_id = self.kwargs.get('pharmacy_id')
-        pharmacy = get_object_or_404(Pharmacy, id=pharmacy_id)
         metrics = cache.get(f'{pharmacy_id}-sales_metrics')
 
         if not metrics:
+            pharmacy = self.get_pharmacy()
             pharmacy_sales = self.model.objects.filter(pharmacy=pharmacy)
             total_sales_count = pharmacy_sales.count()
             total_sales_amount = pharmacy_sales.aggregate(total=models.Sum('total_amount'))['total'] or 0
@@ -128,18 +122,11 @@ class SalesListView(LoginRequiredMixin,UserPassesTestMixin,ListView):
         context["metrics"] = metrics
         return context
     
-class SupplierCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class SupplierCreateView(BasePharmacyView, CreateView):
     model = Supplier
     template_name = "core/add_supplier.html"
     fields = ['name','office','contact_info']
     
-    def test_func(self):
-        pharmacy = self.get_pharmacy()
-        return pharmacy.owner == self.request.user
-
-    def get_pharmacy(self):
-        return get_object_or_404(Pharmacy, id=self.kwargs['pharmacy_id'])
-
     def form_valid(self, form):
         form.instance.pharmacy = self.get_pharmacy()
         messages.success(self.request, "Supplier added successfully!")
@@ -149,31 +136,26 @@ class SupplierCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return reverse_lazy("Work", kwargs={"pharmacy_id": self.kwargs['pharmacy_id']})
     
 
-class InventoryView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+class InventoryView(BasePharmacyView, TemplateView):
     template_name = 'core/inventory.html'
-
-    def test_func(self) -> bool:
-        """Check if the user has access to the pharmacy."""
-        return self.get_pharmacy() in self.request.user.pharmacies.all()
-
-    def get_pharmacy(self):
-        """Retrieve the pharmacy object."""
-        return get_object_or_404(Pharmacy, id=self.kwargs['pharmacy_id'])
 
     def get(self, request, pharmacy_id):
         """Handle GET requests to display the inventory."""
         products = self.get_filtered_products(request)
         page_obj = self.paginate_products(products, request)
+        return render(request, self.template_name, self.get_context_data(page_obj=page_obj))
 
-        return render(request, self.template_name, {
-            'products': page_obj,
-            'current_sort': request.GET.get('sort', 'name'),
-            'search_query': request.GET.get('search', ''),
-            'show_expired': request.GET.get('show_expired') == 'true',
-            'today': timezone.now().date(),
-            'soon': timezone.now().date() + timedelta(days=30),
-        })
-
+    def get_context_data(self, **kwargs):
+        """Add additional context for the inventory view."""
+        context = super().get_context_data(**kwargs)
+        context['current_sort'] = self.request.GET.get('sort', 'name')
+        context['search_query'] = self.request.GET.get('search', '')
+        context['show_expired'] = self.request.GET.get('show_expired') == 'true'
+        context['today'] = timezone.now().date()
+        context['soon'] = timezone.now().date() + timedelta(days=30)
+        context['products'] = kwargs.get('page_obj')
+        return context
+        
     def get_filtered_products(self, request):
         """Retrieve filtered products based on search and sorting."""
         pharmacy = self.get_pharmacy()

@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PharmaLogix</title>
+    <title>Smart Pharma IQ</title>
     <link rel="stylesheet" href="{% static 'base/css/base.css' %}">
     {% block head %}{% endblock head %}
 </head>
@@ -14,13 +14,23 @@
         <ul class="nav-list">
             {% if user.is_authenticated %}
                 <li class="nav-item"><a href="{% url "Main" %}" class="nav-link">Home</a></li>
-                {% block nav %}{% endblock nav %}
+                
+                {% if pharmacy.id %}
+                <li class="nav-item"><a href="{% url "Product add" pharmacy.id%}" class="nav-link">Add Products</a></li>
+                <li class="nav-item"><a href="{% url "Inventory" pharmacy.id%}" class="nav-link">Inventory</a></li>
+                {% if user == pharmacy.owner %}
+                <li class="nav-item">
+                    <a href="{% url 'Sale list' pharmacy.id %}" class="nav-link">Sales History</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'Supplier add' pharmacy.id %}" class="nav-link">Add Supplier</a>
+                </li>
+                {% endif %}
+                {% endif %}
 
                 {% if user.is_superuser %}
                 <li class="nav-item"><a href="{% url "Barcode add" %}" class="nav-link">Add Barcodes</a></li>
                 {% endif %}
-            {% else %}
-                <li class="nav-item"><a href="{% url "Login" %}" class="nav-link">Login</a></li>
             {% endif %}
         </ul>
     </nav>
@@ -32,7 +42,7 @@
     </main>
 
     <footer id="footer" class="site-footer">
-        &copy; 2024 PharmaLogix
+        &copy; 2024 Smart Pharma IQ
     </footer>
 
     {% block scripts %}{% endblock scripts %}

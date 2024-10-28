@@ -5,18 +5,6 @@
     <link rel="stylesheet" href="{% static 'core/css/work.css' %}">
 {% endblock %}
 
-{% block nav %}
-<li class="nav-item"><a href="{% url "Product add" pharmacy.id%}" class="nav-link">Add Products</a></li>
-<li class="nav-item"><a href="{% url "Inventory" pharmacy.id%}" class="nav-link">Inventory</a></li>
-{% if user == pharmacy.owner %}
-<li class="nav-item">
-    <a href="{% url 'Sale list' pharmacy.id %}" class="nav-link">Sales History</a>
-</li>
-<li class="nav-item">
-    <a href="{% url 'Supplier add' pharmacy.id %}" class="nav-link">Add Supplier</a>
-</li>
-{% endif %}
-{% endblock nav %}
 
 {% block content %}
 <div class="cashier-container">
