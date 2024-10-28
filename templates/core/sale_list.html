@@ -11,7 +11,7 @@
 {% block content %}
 
 <div class="sales-view">
-    
+    {% if metrics %}
     <div class="metrics">
         <div class="metric">
             <h3>Total Sales</h3>
@@ -38,6 +38,7 @@
             <p>{{ metrics.best_selling_product }} - {{ metrics.best_selling_product_revenue }} IQD</p>
         </div>
     </div>
+    {% endif %}
     <h1>Sales Records</h1>
     
     {% if sales %}
