@@ -17,8 +17,8 @@
                 <option value="stock_level" {% if request.GET.sort == 'stock_level' %}selected{% endif %}>Sort by Stock Level</option>
             </select>
             <label>
-                <input type="checkbox" name="show_expired" value="true" {% if show_expired %}checked{% endif %}>
-                Show Expired Products with Stock
+                <input type="checkbox" name="show_expired" value="true" {% if show_expired %}checked{% endif %} {% if not has_basic_inventory_audit %}disabled{% endif %}>
+                Show Expired Products
             </label>
             <button type="submit">Apply</button>
         </form>
@@ -40,7 +40,7 @@
             </thead>
             <tbody>
                 {% for product in products %}
-                    <tr class="{% if product.stock_level < 15 %}alert-stock{% endif %} {% if product.expiration_date < today %}expired{% endif %}">
+                    <tr class="{% if has_basic_inventory_audit %}{% if product.stock_level < 15 %}alert-stock{% endif %} {% if product.expiration_date < today %}expired{% endif %}{% endif %}">
                         <td>{{ product.product.name }}</td>
                         <td>{{ product.product.product_type }}</td>
                         <td>
@@ -53,12 +53,12 @@
                         <td>{{ product.price }}</td>
                         <td>{{ product.supplier_price }}</td>
                         <td class="stock-level 
-                            {% if product.stock_level < 10 %}low-stock{% elif product.stock_level <= 20 %}medium-stock{% else %}high-stock{% endif %}">
+                            {% if has_basic_inventory_audit %}{% if product.stock_level < 10 %}low-stock{% elif product.stock_level <= 20 %}medium-stock{% else %}high-stock{% endif %}{% endif %}">
                             {{ product.stock_level }}
                         </td>
-
+            
                         <td class="expiration-date 
-                            {% if product.expiration_date < today %}expired{% elif product.expiration_date < soon %}expiring-soon{% endif %}">
+                            {% if has_basic_inventory_audit %}{% if product.expiration_date < today %}expired{% elif product.expiration_date < soon %}expiring-soon{% endif %}{% endif %}">
                             {{ product.expiration_date }}
                         </td>
                         <td>

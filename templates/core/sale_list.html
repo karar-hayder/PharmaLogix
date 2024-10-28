@@ -13,30 +13,41 @@
 <div class="sales-view">
     {% if metrics %}
     <div class="metrics">
-        <div class="metric">
-            <h3>Total Sales</h3>
-            <p>{{ metrics.total_sales_amount }} IQD</p>
-        </div>
-        <div class="metric">
-            <h3>Total Sales Transactions</h3>
-            <p>{{ metrics.total_sales_count }}</p>
-        </div>
-        <div class="metric">
-            <h3>Average Sale Amount</h3>
-            <p>{{ metrics.average_sale_amount }} IQD</p>
-        </div>
-        <div class="metric">
-            <h3>Total Discounts Given</h3>
-            <p>{{ metrics.total_discount }} IQD</p>
-        </div>
-        <div class="metric">
-            <h3>Total Payment Received</h3>
-            <p>{{ metrics.total_payment_received }} IQD</p>
-        </div>
-        <div class="metric">
-            <h3>Best-Selling Product</h3>
-            <p>{{ metrics.best_selling_product }} - {{ metrics.best_selling_product_revenue }} IQD</p>
-        </div>
+        <h2>Sales Metrics</h2>
+        {% if has_metrics_feature %}
+            <div class="metric">
+                <h3>Total Sales</h3>
+                <p>{{ metrics.total_sales_amount }} IQD</p>
+            </div>
+            <div class="metric">
+                <h3>Total Sales Transactions</h3>
+                <p>{{ metrics.total_sales_count }}</p>
+            </div>
+            <div class="metric">
+                <h3>Average Sale Amount</h3>
+                <p>{{ metrics.average_sale_amount }} IQD</p>
+            </div>
+            <div class="metric">
+                <h3>Total Discounts Given</h3>
+                <p>{{ metrics.total_discount }} IQD</p>
+            </div>
+            <div class="metric">
+                <h3>Total Payment Received</h3>
+                <p>{{ metrics.total_payment_received }} IQD</p>
+            </div>
+            <div class="metric">
+                <h3>Best-Selling Product</h3>
+                <p>{{ metrics.best_selling_product }} - {{ metrics.best_selling_product_revenue }} IQD</p>
+            </div>
+        {% else %}
+            <div class="alert alert-warning">
+                <strong>Metrics Feature Unavailable:</strong> This feature is not included in your current subscription plan.
+            </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <strong>No Sales Metrics:</strong> There are currently no sales metrics available.
     </div>
     {% endif %}
     <h1>Sales Records</h1>

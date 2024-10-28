@@ -121,6 +121,9 @@ class SalesListView(BasePharmacyView,ListView):
 
                 cache.set('sales_metrics', metrics, timeout=60*5)
             context["metrics"] = metrics
+            context['has_metrics_feature'] = True
+        else:
+            context["metrics"] = True
         return context
     
 class SupplierCreateView(BasePharmacyView, CreateView):
@@ -149,11 +152,14 @@ class InventoryView(BasePharmacyView, TemplateView):
     def get_context_data(self, **kwargs):
         """Add additional context for the inventory view."""
         context = super().get_context_data(**kwargs)
+        pharmacy = self.get_pharmacy()
         context['current_sort'] = self.request.GET.get('sort', 'name')
         context['search_query'] = self.request.GET.get('search', '')
-        context['show_expired'] = self.request.GET.get('show_expired') == 'true'
-        context['today'] = timezone.now().date()
-        context['soon'] = timezone.now().date() + timedelta(days=30)
+        if pharmacy.has_feature("basic_inventory_audit"):
+            context['show_expired'] = self.request.GET.get('show_expired','false') == 'true'
+            context['has_basic_inventory_audit'] = True
+            context['today'] = timezone.now().date()
+            context['soon'] = timezone.now().date() + timedelta(days=30)
         context['products'] = kwargs.get('page_obj')
         return context
         

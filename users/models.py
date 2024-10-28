@@ -65,7 +65,7 @@ class SubscriptionPlan(models.Model):
     duration_days = models.PositiveIntegerField('Subscription Duration (days)', default=30)
     price = models.PositiveIntegerField()
     discount_percentage = models.PositiveIntegerField('Discount Percentage', default=0)
-    features = models.ManyToManyField(SubscriptionFeature, related_name='plans')
+    features = models.ManyToManyField(SubscriptionFeature, related_name='plans',blank=True)
     description = models.TextField(blank=True, null=True)
     featured = models.BooleanField(default=False)
 
