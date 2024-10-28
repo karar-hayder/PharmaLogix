@@ -26,6 +26,17 @@ class Pharmacy(models.Model):
             sub = self.subscriptions.last()
             cache.set(f"{self.pk}-sub",sub,60*60)
         return sub
+    def has_feature(self, feature_name: str) -> bool:
+        """Check if the pharmacy's current subscription includes the specified feature."""
+        cache_key = f"{self.pk}-has_feature-{feature_name}"
+        cached_result = cache.get(cache_key)
+        if cached_result is not None:
+            return cached_result
+        subscription = self.subscription
+        has_feature = subscription and subscription.plan.features.filter(tag=feature_name).exists()
+        cache.set(cache_key, has_feature, timeout=60 * 60)
+        return has_feature
+        
     class Meta:
         verbose_name = "Pharmacy"
         verbose_name_plural = "Pharmacies"
