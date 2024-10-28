@@ -414,3 +414,11 @@ class CreateProductAndPharmacyProductView(APIView):
             print("Unexpected Error:", e)
             return Response({'error': 'An error occurred while saving the PharmacyProduct.'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class InventoryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        products = PharmacyProduct.objects.select_related('product', 'supplier').all()
+        serializer = PharmacyProductSerializer(products, many=True)
+        return Response(serializer.data)

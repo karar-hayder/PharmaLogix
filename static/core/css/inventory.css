@@ -1,0 +1,97 @@
+.inventory-view {
+  padding: 20px;
+}
+.inventory-view .search-sort {
+  margin-bottom: 20px;
+}
+.inventory-view .search-sort .search-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.inventory-view .search-sort .search-form input[type=text] {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  flex: 1;
+  min-width: 200px;
+}
+.inventory-view .search-sort .search-form select, .inventory-view .search-sort .search-form button {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.inventory-view .search-sort .search-form button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  transition: background-color 0.3s;
+}
+.inventory-view .search-sort .search-form button:hover {
+  background-color: #0056b3;
+}
+.inventory-view .inventory-table table {
+  width: 100%;
+  border-collapse: collapse;
+  /* Stock Level Column Styling */
+  /* Expiration Date Column Styling */
+}
+.inventory-view .inventory-table table th, .inventory-view .inventory-table table td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+.inventory-view .inventory-table table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+.inventory-view .inventory-table table .stock-level { /* Very Low Stock */
+  /* Medium Stock */
+  /* Healthy Stock */
+}
+.inventory-view .inventory-table table .stock-level.low-stock {
+  background-color: #ffcccc;
+}
+.inventory-view .inventory-table table .stock-level.medium-stock {
+  background-color: #fff3cd;
+}
+.inventory-view .inventory-table table .stock-level.high-stock {
+  background-color: #ffffff;
+}
+.inventory-view .inventory-table table .expiration-date { /* Expired */
+  /* Expiring Soon */
+}
+.inventory-view .inventory-table table .expiration-date.expired {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+.inventory-view .inventory-table table .expiration-date.expiring-soon {
+  background-color: #fff3cd;
+  color: #856404;
+}
+.inventory-view .pagination {
+  margin-top: 20px;
+  text-align: center;
+}
+.inventory-view .pagination .step-links a {
+  margin: 0 5px;
+  padding: 5px 10px;
+  text-decoration: none;
+  color: #007bff;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  transition: background-color 0.3s, color 0.3s;
+}
+.inventory-view .pagination .step-links a:hover {
+  background-color: #007bff;
+  color: white;
+}
+.inventory-view .pagination .step-links .current {
+  font-weight: bold;
+  color: #333;
+}/*# sourceMappingURL=inventory.css.map */

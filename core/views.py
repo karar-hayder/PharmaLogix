@@ -1,9 +1,12 @@
 from typing import Any
+from django.utils import timezone
+from datetime import timedelta
 from django.db.models.query import QuerySet
 from django.shortcuts import render
 from django.views.generic import TemplateView, UpdateView, ListView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from .models import Pharmacy, Medication, Sale, SaleItem, models, DOSAGE_FORMS, Supplier
+from django.core.paginator import Paginator
+from .models import Pharmacy, Medication, Sale, SaleItem, models, DOSAGE_FORMS, Supplier, PharmacyProduct
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from rest_framework import status
@@ -144,3 +147,58 @@ class SupplierCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
     def get_success_url(self):
         return reverse_lazy("Work", kwargs={"pharmacy_id": self.kwargs['pharmacy_id']})
+    
+
+class InventoryView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    template_name = 'core/inventory.html'
+
+    def test_func(self) -> bool:
+        """Check if the user has access to the pharmacy."""
+        return self.get_pharmacy() in self.request.user.pharmacies.all()
+
+    def get_pharmacy(self):
+        """Retrieve the pharmacy object."""
+        return get_object_or_404(Pharmacy, id=self.kwargs['pharmacy_id'])
+
+    def get(self, request, pharmacy_id):
+        """Handle GET requests to display the inventory."""
+        products = self.get_filtered_products(request)
+        page_obj = self.paginate_products(products, request)
+
+        return render(request, self.template_name, {
+            'products': page_obj,
+            'current_sort': request.GET.get('sort', 'name'),
+            'search_query': request.GET.get('search', ''),
+            'show_expired': request.GET.get('show_expired') == 'true',
+            'today': timezone.now().date(),
+            'soon': timezone.now().date() + timedelta(days=30),
+        })
+
+    def get_filtered_products(self, request):
+        """Retrieve filtered products based on search and sorting."""
+        pharmacy = self.get_pharmacy()
+        products = PharmacyProduct.objects.select_related('product', 'supplier').filter(pharmacy=pharmacy)
+
+        search_query = request.GET.get('search', '')
+        if search_query:
+            products = products.filter(product__name__icontains=search_query)
+
+        show_expired = request.GET.get('show_expired') == 'true'
+        if show_expired:
+            products = products.filter(expiration_date__lt=timezone.now(), stock_level__gt=0)
+
+        sort_by = request.GET.get('sort', 'name')
+        if sort_by == 'price':
+            products = products.order_by('price')
+        elif sort_by == 'stock_level':
+            products = products.order_by('stock_level')
+        else:
+            products = products.order_by('product__name')
+
+        return products
+
+    def paginate_products(self, products, request):
+        """Paginate the product list."""
+        paginator = Paginator(products, 30)
+        page_number = request.GET.get('page', 1)
+        return paginator.get_page(page_number)

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'core/css/inventory.css' %}">
+{% endblock head %}
+
+{% block content %}
+<div class='inventory-view'>
+    <!-- Search, Sort, and Filter Form -->
+    <div class="search-sort">
+        <form method="GET" class="search-form">
+            <input type="text" name="search" placeholder="Search products..." value="{{ request.GET.search }}">
+            <select name="sort">
+                <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Sort by Name</option>
+                <option value="price" {% if request.GET.sort == 'price' %}selected{% endif %}>Sort by Price</option>
+                <option value="stock_level" {% if request.GET.sort == 'stock_level' %}selected{% endif %}>Sort by Stock Level</option>
+            </select>
+            <label>
+                <input type="checkbox" name="show_expired" value="true" {% if show_expired %}checked{% endif %}>
+                Show Expired Products with Stock
+            </label>
+            <button type="submit">Apply</button>
+        </form>
+    </div>
+
+    <div class='inventory-table'>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Product Type</th>
+                    <th>Supplier</th>
+                    <th>Price</th>
+                    <th>Supplier Price</th>
+                    <th>Stock Level</th>
+                    <th>Expiration Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                    <tr class="{% if product.stock_level < 15 %}alert-stock{% endif %} {% if product.expiration_date < today %}expired{% endif %}">
+                        <td>{{ product.product.name }}</td>
+                        <td>{{ product.product.product_type }}</td>
+                        <td>
+                            {% if product.supplier %}
+                                {{ product.supplier.name }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>{{ product.price }}</td>
+                        <td>{{ product.supplier_price }}</td>
+                        <td class="stock-level 
+                            {% if product.stock_level < 10 %}low-stock{% elif product.stock_level <= 20 %}medium-stock{% else %}high-stock{% endif %}">
+                            {{ product.stock_level }}
+                        </td>
+
+                        <td class="expiration-date 
+                            {% if product.expiration_date < today %}expired{% elif product.expiration_date < soon %}expiring-soon{% endif %}">
+                            {{ product.expiration_date }}
+                        </td>
+                        <td>
+                            <button class="edit-btn">Edit</button>
+                            <button class="delete-btn">Delete</button>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8">No products found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination">
+        <span class="step-links">
+            {% if products.has_previous %}
+                <a href="?page=1&search={{ request.GET.search }}&sort={{ request.GET.sort }}&show_expired={{ show_expired }}">first</a>
+                <a href="?page={{ products.previous_page_number }}&search={{ request.GET.search }}&sort={{ request.GET.sort }}&show_expired={{ show_expired }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ products.number }} of {{ products.paginator.num_pages }}.
+            </span>
+
+            {% if products.has_next %}
+                <a href="?page={{ products.next_page_number }}&search={{ request.GET.search }}&sort={{ request.GET.sort }}&show_expired={{ show_expired }}">next</a>
+                <a href="?page={{ products.paginator.num_pages }}&search={{ request.GET.search }}&sort={{ request.GET.sort }}&show_expired={{ show_expired }}">last</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/inventory.js' %}"></script>
+{% endblock scripts %}

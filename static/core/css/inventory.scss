@@ -1,0 +1,101 @@
+.inventory-view {
+    padding: 20px;
+
+    .search-sort {
+        margin-bottom: 20px;
+
+        .search-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+
+            input[type="text"] {
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 14px;
+                flex: 1;
+                min-width: 200px;
+            }
+
+            select, button {
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 14px;
+                cursor: pointer;
+            }
+
+            button {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                transition: background-color 0.3s;
+
+                &:hover {
+                    background-color: #0056b3;
+                }
+            }
+        }
+    }
+
+    .inventory-table {
+        table {
+            width: 100%;
+            border-collapse: collapse;
+
+            th, td {
+                padding: 12px;
+                text-align: left;
+                border: 1px solid #ddd;
+                font-size: 14px;
+            }
+
+            th {
+                background-color: #f4f4f4;
+                font-weight: bold;
+            }
+
+            /* Stock Level Column Styling */
+            .stock-level {
+                &.low-stock { background-color: #ffcccc; }      /* Very Low Stock */
+                &.medium-stock { background-color: #fff3cd; }   /* Medium Stock */
+                &.high-stock { background-color: #ffffff; }     /* Healthy Stock */
+            }
+
+            /* Expiration Date Column Styling */
+            .expiration-date {
+                &.expired { background-color: #f8d7da; color: #721c24; } /* Expired */
+                &.expiring-soon { background-color: #fff3cd; color: #856404; } /* Expiring Soon */
+            }
+        }
+    }
+
+    .pagination {
+        margin-top: 20px;
+        text-align: center;
+
+        .step-links {
+            a {
+                margin: 0 5px;
+                padding: 5px 10px;
+                text-decoration: none;
+                color: #007bff;
+                border: 1px solid #007bff;
+                border-radius: 4px;
+                transition: background-color 0.3s, color 0.3s;
+
+                &:hover {
+                    background-color: #007bff;
+                    color: white;
+                }
+            }
+
+            .current {
+                font-weight: bold;
+                color: #333;
+            }
+        }
+    }
+}
