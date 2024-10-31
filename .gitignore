@@ -1,5 +1,9 @@
-
+### Custom
 production_static/*
+*.crt
+*.key
+*.pem
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
