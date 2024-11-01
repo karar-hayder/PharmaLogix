@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from rest_framework import serializers
 from .models import Medication, Cosmetic, Product, PharmacyProduct, Sale, SaleItem
-
+from users.serializers import SupplierSerializer
 class MedicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medication
@@ -32,8 +32,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class PharmacyProductSerializer(serializers.ModelSerializer):
-    product = ProductSerializer()  # Nesting the ProductSerializer to include full product details
-
+    product = ProductSerializer()
+    supplier = SupplierSerializer(read_only=True)
     class Meta:
         model = PharmacyProduct
         fields = ['id', 'product', 'pharmacy_id', 'supplier_price', 'price', 'expiration_date', 'stock_level', 'supplier']
@@ -60,20 +60,19 @@ class PharmacyProductSerializer(serializers.ModelSerializer):
             }
 
         return representation
-# class ProductSerializer(serializers.ModelSerializer):
-#     medication_name = serializers.CharField(source='medication.name', read_only=True)
-#     generic_name = serializers.CharField(source='medication.generic_name', read_only=True)
-#     manufacturer = serializers.CharField(source='medication.manufacturer', read_only=True)
-#     barcode = serializers.CharField(source='medication.barcode', read_only=True)
-#     ingredients = serializers.CharField(source='medication.active_ingredients', read_only=True)
-#     strength = serializers.CharField(source='medication.strength', read_only=True)
-#     dosage_form = serializers.CharField(source='medication.dosage_form', read_only=True)
+    def update(self, instance, validated_data):
+        # Update the PharmacyProduct instance
+        instance.supplier_price = validated_data.get('supplier_price', instance.supplier_price)
+        instance.price = validated_data.get('price', instance.price)
+        instance.expiration_date = validated_data.get('expiration_date', instance.expiration_date)
+        instance.stock_level = validated_data.get('stock_level', instance.stock_level)
+        instance.save()
 
-#     class Meta:
-#         model = Product
-#         fields = ['id', 'medication_name', 'generic_name','manufacturer', 'ingredients','price', 'barcode', 'stock_level','strength','dosage_form','expiration_date']
+        return instance
+    
+
 class SaleItemSerializer(serializers.ModelSerializer):
-    product = PharmacyProductSerializer()  # Updated to use PharmacyProductSerializer
+    product = PharmacyProductSerializer()
 
     class Meta:
         model = SaleItem
