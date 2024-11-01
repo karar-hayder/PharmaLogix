@@ -3,7 +3,7 @@ from . import views
 
 from rest_framework.routers import DefaultRouter
 from .API_views import MedicationViewSet, CosmeticViewSet, ProductViewSet, PharmacyProductViewSet,PharmacyProductSearchAPIView, CartAPIView, CheckoutAPIView, CreateProductAndPharmacyProductView
-from users.serializers import SupplierViewSet
+from users.API_views import SupplierViewSet
 
 router = DefaultRouter()
 router.register(r'medication', MedicationViewSet, basename='medication')
