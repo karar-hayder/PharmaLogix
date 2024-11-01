@@ -15,7 +15,7 @@ import json
 from django.core.cache import cache
 from django.contrib import messages
 from django.urls import reverse_lazy
-
+from django.db.models import Sum
 # Create your views here.
 
 class BasePharmacyView(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -119,7 +119,7 @@ class SalesListView(BasePharmacyView,ListView):
                     'best_selling_product_revenue': best_selling_product_revenue,
                 }
 
-                cache.set('sales_metrics', metrics, timeout=60*5)
+                cache.set(f'{pharmacy_id}-sales_metrics', metrics, timeout=60*5)
             context["metrics"] = metrics
             context['has_metrics_feature'] = True
         else:
@@ -191,3 +191,94 @@ class InventoryView(BasePharmacyView, TemplateView):
         paginator = Paginator(products, 30)
         page_number = request.GET.get('page', 1)
         return paginator.get_page(page_number)
+
+class AdvancedSalesMetricsView(BasePharmacyView,TemplateView):
+    template_name = 'core/advanced_sales_metrics.html'
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pharmacy_id = self.kwargs.get('pharmacy_id')    
+        pharmacy = self.get_pharmacy()
+
+        if pharmacy.has_feature('advanced_selling_metrics'):
+            metrics = cache.get(f'{pharmacy_id}-advanced_sales_metrics')
+            if not metrics:
+
+                pharmacy_sales = Sale.objects.filter(pharmacy=pharmacy)
+                total_sales_count = pharmacy_sales.count()
+                total_sales_amount = pharmacy_sales.aggregate(total=Sum('total_amount'))['total'] or 0
+                total_discount = pharmacy_sales.aggregate(total=Sum('discount'))['total'] or 0
+                total_payment_received = pharmacy_sales.aggregate(total=Sum('payment_received'))['total'] or 0
+
+                average_sale_amount = round((total_sales_amount / total_sales_count if total_sales_count > 0 else 0), 3)
+
+                best_selling_product_item = (
+                    SaleItem.objects.filter(sale__pharmacy=pharmacy)
+                    .values('product__product__name')
+                    .annotate(total_sales=Sum('price'))
+                    .order_by('-total_sales')
+                    .first()
+                )
+                best_selling_product = best_selling_product_item['product__product__name'] if best_selling_product_item else "None"
+                best_selling_product_revenue = best_selling_product_item['total_sales'] if best_selling_product_item else 0
+
+                forecasted_sales = total_sales_amount * 1.1
+
+                sales_dates = []
+                sales_amount_data = []
+
+                today = timezone.now().date()
+                last_month_start = today - timedelta(days=today.day)
+
+                for i in range(1, last_month_start.day + 1):
+                    sales_date = last_month_start.replace(day=i)
+                    total_for_date = Sale.objects.filter(pharmacy=pharmacy, created_at__date=sales_date).aggregate(total=Sum('total_amount'))['total'] or 0
+                    sales_dates.append(sales_date.strftime('%Y-%m-%d'))
+                    sales_amount_data.append(total_for_date)
+
+
+                best_selling_products = (
+                    SaleItem.objects.filter(sale__pharmacy=pharmacy)
+                    .values('product__product__name')
+                    .annotate(total_sales=Sum('price'))
+                    .order_by('-total_sales')[:10]
+                )
+
+                best_selling_product_names = [item['product__product__name'] for item in best_selling_products]
+                best_selling_product_revenues = [item['total_sales'] for item in best_selling_products]
+
+                pharmacist_sales_data = (
+                    SaleItem.objects.filter(sale__pharmacy=pharmacy)
+                    .values('sale__pharmacist__first_name')
+                    .annotate(total_sales=Sum('price'))
+                    .order_by('-total_sales')
+                )
+                pharmacist_sales_data_dict = {pharmacist['sale__pharmacist__first_name']: pharmacist['total_sales'] for pharmacist in pharmacist_sales_data}
+
+                previous_total_sales_amount = pharmacy_sales.filter(created_at__month=(today.month - 1) % 12).aggregate(total=Sum('total_amount'))['total'] or 0
+                sales_growth = ((total_sales_amount - previous_total_sales_amount) / previous_total_sales_amount * 100) if previous_total_sales_amount > 0 else 0
+
+
+                metrics = {
+                    'total_sales_count': total_sales_count,
+                    'total_sales_amount': f"{total_sales_amount} IQD",
+                    'total_discount': f"{total_discount} IQD",
+                    'total_payment_received': f"{total_payment_received} IQD",
+                    'average_sale_amount': f"{average_sale_amount} IQD",
+                    'best_selling_product': best_selling_product,
+                    'best_selling_product_revenue': f"{best_selling_product_revenue} IQD",
+                    'forecasted_sales': f"{round(forecasted_sales, 4)} IQD",
+                    'sales_dates': sales_dates,
+                    'sales_amount_data': sales_amount_data,
+                    'best_selling_product_names': best_selling_product_names,
+                    'best_selling_product_revenues': best_selling_product_revenues,
+                    'pharmacist_sales_data': pharmacist_sales_data_dict,
+                    'sales_growth': round(sales_growth, 2),
+                }
+                cache.set(f'{pharmacy_id}-advanced_sales_metrics', metrics, timeout=60*5)
+
+            context["metrics"] = metrics
+        else:
+            context["metrics"] = False
+        return context

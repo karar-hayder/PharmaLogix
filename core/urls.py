@@ -20,6 +20,7 @@ urlpatterns = [
     path('inventory/<int:pharmacy_id>/',views.InventoryView.as_view(),name='Inventory'),
     path('product/<int:pharmacy_id>/add/',views.PharmacistProductAdd.as_view(),name='Product add'),
     path('sale/<int:pharmacy_id>/list/',views.SalesListView.as_view(),name='Sale list'),
+    path('sale/<int:pharmacy_id>/metrics/advanced/',views.AdvancedSalesMetricsView.as_view(),name='Sale advanced metrics'),
     path('supplier/<int:pharmacy_id>/add/',views.SupplierCreateView.as_view(),name='Supplier add'),
 
     ## API ##

@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{% static 'core/css/advanced_sales.css' %}">
+{% endblock head %}
+
+{% block content %}
+<div class="container">
+    <h1>Sales Metrics Overview</h1>
+
+    {% if metrics %}
+        <!-- Display metrics data if available -->
+        <div class="chart-container">
+            <div class="col-md-6">
+                <h2>Total Sales Over Time</h2>
+                <canvas id="salesChart"></canvas>
+            </div>
+            <div class="col-md-6">
+                <h2>Best Selling Products</h2>
+                <canvas id="bestSellingProductsChart"></canvas>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <h2>Sales Metrics</h2>
+            <table class="table table-bordered">
+                <tr><th>Total Sales Count</th><td>{{ metrics.total_sales_count }}</td></tr>
+                <tr><th>Total Sales Amount</th><td>{{ metrics.total_sales_amount }}</td></tr>
+                <tr><th>Total Discount</th><td>{{ metrics.total_discount }}</td></tr>
+                <tr><th>Total Payment Received</th><td>{{ metrics.total_payment_received }}</td></tr>
+                <tr><th>Average Sale Amount</th><td>{{ metrics.average_sale_amount }}</td></tr>
+                <tr><th>Best Selling Product</th><td>{{ metrics.best_selling_product }}</td></tr>
+                <tr><th>Best Selling Product Revenue</th><td>{{ metrics.best_selling_product_revenue }}</td></tr>
+                <tr><th>Sales Growth</th><td>{{ metrics.sales_growth }}%</td></tr>
+            </table>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <h2>Sales by Pharmacist</h2>
+            <ul class="list-group">
+                {% for pharmacist, revenue in metrics.pharmacist_sales_data.items %}
+                    <li class="list-group-item">{{ pharmacist }} - {{ revenue }} IQD</li>
+                {% empty %}
+                    <li class="list-group-item">No sales data available.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <!-- Upgrade message if metrics are unavailable -->
+        <div class="upgrade-message" style="text-align: center; margin-top: 50px;">
+            <h2 style="color: #f05454;">Upgrade Your Plan to Access Advanced Sales Metrics!</h2>
+            <p>Unlock in-depth insights, best-selling product data, and advanced metrics with our advanced plan.</p>
+            <a href="#" class="btn btn-primary" style="background-color: #1a3a5f; color: #ffffff; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Upgrade Now</a>
+        </div>
+    {% endif %}
+</div>
+
+{% if metrics %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Total Sales Over Time Chart
+        const salesCtx = document.getElementById('salesChart').getContext('2d');
+        const salesDates = {{ metrics.sales_dates|safe }};
+        const salesAmount = {{ metrics.sales_amount_data|safe }};
+
+        const salesChart = new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: salesDates,
+                datasets: [{
+                    label: 'Total Sales Amount (IQD)',
+                    data: salesAmount,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Sales Amount (IQD)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Best Selling Products Chart
+        const bestSellingCtx = document.getElementById('bestSellingProductsChart').getContext('2d');
+        const productNames = {{ metrics.best_selling_product_names|safe }};
+        const productRevenues = {{ metrics.best_selling_product_revenues|safe }};
+
+        const bestSellingProductsChart = new Chart(bestSellingCtx, {
+            type: 'bar',
+            data: {
+                labels: productNames,
+                datasets: [{
+                    label: 'Revenue (IQD)',
+                    data: productRevenues,
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Revenue (IQD)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Products'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}

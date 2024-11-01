@@ -1,0 +1,92 @@
+/* Variables */
+/* Typography */
+/* Spacing */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+h1 {
+  color: #1a3a5f;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+h2 {
+  color: #1a3a5f;
+  margin-bottom: 0.5rem;
+  font-size: 1.5em;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+.table th {
+  background-color: #1a3a5f;
+  color: #ffffff;
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+.table td {
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+.table td:hover {
+  background-color: rgba(213, 69, 69, 0.2);
+}
+.table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.list-group {
+  margin-top: 30px;
+  padding: 0;
+}
+.list-group .list-group-item {
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  transition: background-color 0.3s ease;
+}
+.list-group .list-group-item:hover {
+  background-color: rgba(213, 69, 69, 0.2);
+}
+
+.chart-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 40px;
+}
+.chart-container canvas {
+  flex: 1 1 48%;
+  margin: 10px;
+  max-width: 600px;
+}
+
+canvas {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0.5rem;
+  }
+  h1, h2 {
+    font-size: 1.4em;
+  }
+  .table {
+    font-size: 0.9em;
+  }
+  .list-group-item {
+    font-size: 0.9em;
+  }
+}/*# sourceMappingURL=advanced_sales.css.map */

@@ -1,0 +1,111 @@
+@import '../../base/css/variables';
+
+$primary-color: #1a3a5f;
+$secondary-color: #f05454;
+$background-color: #f0f0f0;
+$white-color: #ffffff;
+$text-color: #2e2e2e;
+$border-color: rgba(0, 0, 0, 0.1);
+$table-header-color: $primary-color;
+$hover-color: rgba(213, 69, 69, 0.2);
+$font-stack: 'Roboto', sans-serif;
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: $spacing-large;
+    border-radius: 8px;
+}
+
+h1 {
+    color: $primary-color;
+    margin-bottom: $spacing-large;
+    text-align: center;
+}
+
+h2 {
+    color: $primary-color;
+    margin-bottom: $spacing-small;
+    font-size: 1.5em;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+
+    th {
+        background-color: $table-header-color;
+        color: $white-color;
+        padding: 12px;
+        text-align: left;
+        font-weight: bold;
+        border-bottom: 2px solid $border-color;
+    }
+
+    td {
+        padding: 12px;
+        border: 1px solid $border-color;
+
+        &:hover {
+            background-color: $hover-color;
+        }
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+}
+
+.list-group {
+    margin-top: 30px;
+    padding: 0;
+
+    .list-group-item {
+        padding: 12px;
+        border: 1px solid $border-color;
+        background-color: $white-color;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+            background-color: $hover-color;
+        }
+    }
+}
+
+.chart-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-top: 40px;
+
+    canvas {
+        flex: 1 1 48%;
+        margin: 10px;
+        max-width: 600px;
+    }
+}
+
+canvas {
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    background-color: $white-color;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: $spacing-small;
+    }
+
+    h1, h2 {
+        font-size: 1.4em;
+    }
+
+    .table {
+        font-size: 0.9em;
+    }
+
+    .list-group-item {
+        font-size: 0.9em;
+    }
+}
