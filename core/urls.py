@@ -2,13 +2,15 @@ from django.urls import path, include
 from . import views
 
 from rest_framework.routers import DefaultRouter
-from .API_views import MedicationViewSet, CosmeticViewSet, ProductViewSet,PharmacyProductSearchAPIView, CartAPIView, CheckoutAPIView, CreateProductAndPharmacyProductView
+from .API_views import MedicationViewSet, CosmeticViewSet, ProductViewSet, PharmacyProductViewSet,PharmacyProductSearchAPIView, CartAPIView, CheckoutAPIView, CreateProductAndPharmacyProductView
+from users.serializers import SupplierViewSet
 
 router = DefaultRouter()
 router.register(r'medication', MedicationViewSet, basename='medication')
 router.register(r'cosmetic', CosmeticViewSet, basename='cosmetic')
 router.register(r'product', ProductViewSet, basename='product')
-
+router.register(r'PHproduct', PharmacyProductViewSet, basename='PHproduct')
+router.register(r'suppliers', SupplierViewSet)
 urlpatterns = [
 
     ## Main ##
