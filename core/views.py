@@ -129,7 +129,7 @@ class SalesListView(BasePharmacyView,ListView):
 class SupplierCreateView(BasePharmacyView, CreateView):
     model = Supplier
     template_name = "core/add_supplier.html"
-    fields = ['name','office','contact_info']
+    fields = ['office','contact_info']
     
     def form_valid(self, form):
         form.instance.pharmacy = self.get_pharmacy()

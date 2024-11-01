@@ -43,14 +43,13 @@ class Pharmacy(models.Model):
 
 class Supplier(models.Model):
     pharmacy = models.ForeignKey(Pharmacy,on_delete=models.SET_NULL,null=True,related_name='suppliers')
-    name = models.CharField(max_length=255)
     office = models.CharField('Office or dispensary',max_length=255,blank=True)
     contact_info = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.name
+        return self.office
 class SubscriptionFeature(models.Model):
     name = models.CharField(max_length=255)
     tag = models.CharField(max_length=255)

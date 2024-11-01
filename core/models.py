@@ -78,7 +78,7 @@ class PharmacyProduct(models.Model):
         unique_together = ('product', 'pharmacy', 'supplier')
 
     def __str__(self):
-        return f"{self.product.name} at {self.pharmacy.name} from {self.supplier.name if self.supplier else "X"} - {self.price} IQD ({self.stock_level})"
+        return f"{self.product.name} at {self.pharmacy.name} from {self.supplier.office if self.supplier else "X"} - {self.price} IQD ({self.stock_level})"
 
     def clean(self):
         if self.expiration_date and self.expiration_date < timezone.now().date():
