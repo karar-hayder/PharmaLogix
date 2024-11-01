@@ -44,7 +44,12 @@
     <footer id="footer" class="site-footer">
         &copy; 2024 Smart Pharma IQ
     </footer>
-
+    <script src="{% static 'base/js/base.js' %}"></script>
+    {% if pharmacy %}
+    <script>
+        const pharmacyId = "{{ pharmacy.id }}";
+    </script>
+    {% endif %}
     {% block scripts %}{% endblock scripts %}
 </body>
 </html>
