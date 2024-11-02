@@ -122,6 +122,7 @@ class SalesListView(BasePharmacyView,ListView):
                 cache.set(f'{pharmacy_id}-sales_metrics', metrics, timeout=60*5)
             context["metrics"] = metrics
             context['has_metrics_feature'] = True
+            context['has_advanced_metrics'] = pharmacy.has_feature('advanced_selling_metrics')
         else:
             context["metrics"] = True
         return context

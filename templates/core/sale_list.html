@@ -45,6 +45,18 @@
             </div>
         {% endif %}
     </div>
+    <div class="advanced-sales-link" style="margin-top: 20px;">
+        <a 
+            href="{% if has_advanced_metrics %}{% url 'Sale advanced metrics' pharmacy.id %}{% endif %}" 
+            class="btn btn-primary" 
+            style="background-color: #1a3a5f; color: #ffffff; border-radius: 5px; text-decoration: none; padding: 10px 15px; display: inline-block;"
+            {% if not has_advanced_metrics %}onclick="return false;" style="pointer-events: none; opacity: 0.6;"{% endif %}>
+            View Advanced Sales Metrics
+        </a>
+        {% if not has_advanced_metrics %}
+            <p class="text-muted" style="margin-top: 10px;">Advanced metrics are not available for your subscription.</p>
+        {% endif %}
+    </div>
     {% else %}
     <div class="alert alert-info">
         <strong>No Sales Metrics:</strong> There are currently no sales metrics available.
