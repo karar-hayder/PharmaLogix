@@ -29,9 +29,11 @@
                 <tr>
                     <th>Product Name</th>
                     <th>Product Type</th>
-                    <th>Supplier</th>
+                    {% if has_basic_inventory_audit %}
+                        <th>Supplier</th>
+                        <th>Supplier Price</th>
+                    {% endif %}
                     <th>Price</th>
-                    <th>Supplier Price</th>
                     <th>Stock Level</th>
                     <th>Expiration Date</th>
                     <th>Actions</th>
@@ -42,15 +44,17 @@
                     <tr class="{% if has_basic_inventory_audit %}{% if product.stock_level < 15 %}alert-stock{% endif %} {% if product.expiration_date < today %}expired{% endif %}{% endif %}">
                         <td>{{ product.product.name }}</td>
                         <td>{{ product.product.product_type }}</td>
-                        <td>
-                            {% if product.supplier %}
-                                {{ product.supplier.office }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
+                        {% if has_basic_inventory_audit %}
+                            <td>
+                                {% if product.supplier %}
+                                    {{ product.supplier.office }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>{{ product.supplier_price }}</td>
+                        {% endif %}
                         <td>{{ product.price }}</td>
-                        <td>{{ product.supplier_price }}</td>
                         <td class="stock-level 
                             {% if has_basic_inventory_audit %}{% if product.stock_level < 10 %}low-stock{% elif product.stock_level <= 20 %}medium-stock{% else %}high-stock{% endif %}{% endif %}">
                             {{ product.stock_level }}
@@ -105,7 +109,7 @@
             <input type="text" id="productName" name="productName" disabled>
 
             <label for="productType">Product Type:</label>
-            <input type="text" id="productType" name="productType" disabled>
+            <input type="text" id="productType" name="productType">
 
 
             <label for="supplierPrice">Supplier Price:</label>
@@ -119,7 +123,7 @@
 
             <label for="stockLevel">Stock Level:</label>
             <input type="number" id="stockLevel" name="stockLevel" required>
-
+            
             <label for="supplier">Supplier:</label>
             <select id="supplier"></select>
             <span id="supplier-name-display">No Supplier</span>
