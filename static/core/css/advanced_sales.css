@@ -5,19 +5,23 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 1.5rem;
+  background-color: #f0f0f0;
   border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
   color: #1a3a5f;
   margin-bottom: 1.5rem;
   text-align: center;
+  font-size: 2em;
 }
 
 h2 {
   color: #1a3a5f;
   margin-bottom: 0.5rem;
   font-size: 1.5em;
+  text-align: center;
 }
 
 .table {
@@ -36,6 +40,8 @@ h2 {
 .table td {
   padding: 12px;
   border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #2e2e2e;
+  transition: background-color 0.3s ease;
 }
 .table td:hover {
   background-color: rgba(213, 69, 69, 0.2);
@@ -52,10 +58,12 @@ h2 {
   padding: 12px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   background-color: #ffffff;
+  color: #2e2e2e;
   transition: background-color 0.3s ease;
 }
 .list-group .list-group-item:hover {
   background-color: rgba(213, 69, 69, 0.2);
+  cursor: pointer;
 }
 
 .chart-container {
@@ -68,14 +76,85 @@ h2 {
   flex: 1 1 48%;
   margin: 10px;
   max-width: 600px;
-}
-
-canvas {
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   background-color: #ffffff;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Date Selector Styles */
+.date-selector-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+.date-selector-container label {
+  color: #2e2e2e;
+  margin-right: 10px;
+  font-weight: bold;
+}
+.date-selector-container input[type=date] {
+  padding: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  background-color: #ffffff;
+  color: #2e2e2e;
+  font-family: "Roboto", sans-serif;
+  margin-right: 10px;
+  transition: border-color 0.3s ease;
+}
+.date-selector-container input[type=date]:focus {
+  outline: none;
+  border-color: #1a3a5f;
+}
+.date-selector-container .date-picker {
+  padding: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  background-color: #ffffff;
+  color: #2e2e2e;
+  font-family: "Roboto", sans-serif;
+  margin-right: 10px;
+  transition: border-color 0.3s ease;
+}
+.date-selector-container .date-picker:focus {
+  outline: none;
+  border-color: #1a3a5f;
+}
+
+/* Button Styling */
+.btn-primary {
+  background-color: #1a3a5f;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.btn-primary:hover {
+  background-color: #0f2237;
+  transform: scale(1.02);
+  cursor: pointer;
+}
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.upgrade-message {
+  text-align: center;
+  margin-top: 50px;
+}
+.upgrade-message h2 {
+  color: #f05454;
+  font-size: 1.8em;
+  margin-bottom: 10px;
+}
+.upgrade-message p {
+  color: #2e2e2e;
+}
+
+/* Responsive Styling */
 @media (max-width: 768px) {
   .container {
     padding: 0.5rem;
@@ -88,5 +167,33 @@ canvas {
   }
   .list-group-item {
     font-size: 0.9em;
+  }
+  .chart-container {
+    flex-direction: column;
+  }
+  .chart-container canvas {
+    max-width: 100%;
+    margin: 15px 0;
+  }
+  .date-selector-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .date-selector-container input[type=date] {
+    margin-bottom: 10px;
+  }
+  .date-selector-container .date-picker {
+    padding: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    background-color: #ffffff;
+    color: #2e2e2e;
+    font-family: "Roboto", sans-serif;
+    margin-right: 10px;
+    transition: border-color 0.3s ease;
+  }
+  .date-selector-container .date-picker:focus {
+    outline: none;
+    border-color: #1a3a5f;
   }
 }/*# sourceMappingURL=advanced_sales.css.map */

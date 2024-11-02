@@ -15,7 +15,7 @@ import json
 from django.core.cache import cache
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.db.models import Sum
+from django.db.models import Sum, Avg
 # Create your views here.
 
 class BasePharmacyView(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -192,29 +192,44 @@ class InventoryView(BasePharmacyView, TemplateView):
         page_number = request.GET.get('page', 1)
         return paginator.get_page(page_number)
 
-class AdvancedSalesMetricsView(BasePharmacyView,TemplateView):
+class AdvancedSalesMetricsView(BasePharmacyView, TemplateView):
     template_name = 'core/advanced_sales_metrics.html'
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        pharmacy_id = self.kwargs.get('pharmacy_id')    
+        pharmacy_id = self.kwargs.get('pharmacy_id')
         pharmacy = self.get_pharmacy()
-
+        
         if pharmacy.has_feature('advanced_selling_metrics'):
-            metrics = cache.get(f'{pharmacy_id}-advanced_sales_metrics')
-            if not metrics:
+            start_date = self.request.GET.get('start_date')
+            end_date = self.request.GET.get('end_date')
+            
+            if start_date:
+                start_date = timezone.datetime.strptime(start_date, "%Y-%m-%d").date()
+            else:
+                start_date = timezone.now().date() - timedelta(days=30)
+            
+            if end_date:
+                end_date = timezone.datetime.strptime(end_date, "%Y-%m-%d").date()
+            else:
+                end_date = timezone.now().date()
 
-                pharmacy_sales = Sale.objects.filter(pharmacy=pharmacy)
+            cache_key = f'{pharmacy_id}-advanced_sales_metrics-{start_date}-{end_date}'
+            metrics = cache.get(cache_key)
+            if not metrics:
+                pharmacy_sales = Sale.objects.filter(
+                    pharmacy=pharmacy,
+                    created_at__date__range=(start_date, end_date)
+                )
+                
                 total_sales_count = pharmacy_sales.count()
                 total_sales_amount = pharmacy_sales.aggregate(total=Sum('total_amount'))['total'] or 0
                 total_discount = pharmacy_sales.aggregate(total=Sum('discount'))['total'] or 0
                 total_payment_received = pharmacy_sales.aggregate(total=Sum('payment_received'))['total'] or 0
-
                 average_sale_amount = round((total_sales_amount / total_sales_count if total_sales_count > 0 else 0), 3)
 
                 best_selling_product_item = (
-                    SaleItem.objects.filter(sale__pharmacy=pharmacy)
+                    SaleItem.objects.filter(sale__pharmacy=pharmacy, sale__created_at__date__range=(start_date, end_date))
                     .values('product__product__name')
                     .annotate(total_sales=Sum('price'))
                     .order_by('-total_sales')
@@ -223,43 +238,63 @@ class AdvancedSalesMetricsView(BasePharmacyView,TemplateView):
                 best_selling_product = best_selling_product_item['product__product__name'] if best_selling_product_item else "None"
                 best_selling_product_revenue = best_selling_product_item['total_sales'] if best_selling_product_item else 0
 
-                forecasted_sales = total_sales_amount * 1.1
 
                 sales_dates = []
                 sales_amount_data = []
 
-                today = timezone.now().date()
-                last_month_start = today - timedelta(days=today.day)
-
-                for i in range(1, last_month_start.day + 1):
-                    sales_date = last_month_start.replace(day=i)
-                    total_for_date = Sale.objects.filter(pharmacy=pharmacy, created_at__date=sales_date).aggregate(total=Sum('total_amount'))['total'] or 0
-                    sales_dates.append(sales_date.strftime('%Y-%m-%d'))
+                current_date = start_date
+                while current_date <= end_date:
+                    total_for_date = Sale.objects.filter(
+                        pharmacy=pharmacy,
+                        created_at__date=current_date
+                    ).aggregate(total=Sum('total_amount'))['total'] or 0
+                    sales_dates.append(current_date.strftime('%Y-%m-%d'))
                     sales_amount_data.append(total_for_date)
-
+                    current_date += timedelta(days=1)
 
                 best_selling_products = (
-                    SaleItem.objects.filter(sale__pharmacy=pharmacy)
+                    SaleItem.objects.filter(sale__pharmacy=pharmacy, sale__created_at__date__range=(start_date, end_date))
                     .values('product__product__name')
                     .annotate(total_sales=Sum('price'))
                     .order_by('-total_sales')[:10]
                 )
-
                 best_selling_product_names = [item['product__product__name'] for item in best_selling_products]
                 best_selling_product_revenues = [item['total_sales'] for item in best_selling_products]
 
                 pharmacist_sales_data = (
-                    SaleItem.objects.filter(sale__pharmacy=pharmacy)
+                    SaleItem.objects.filter(sale__pharmacy=pharmacy, sale__created_at__date__range=(start_date, end_date))
                     .values('sale__pharmacist__first_name')
                     .annotate(total_sales=Sum('price'))
                     .order_by('-total_sales')
                 )
-                pharmacist_sales_data_dict = {pharmacist['sale__pharmacist__first_name']: pharmacist['total_sales'] for pharmacist in pharmacist_sales_data}
+                pharmacist_sales_data_dict = {
+                    pharmacist['sale__pharmacist__first_name']: pharmacist['total_sales']
+                    for pharmacist in pharmacist_sales_data
+                }
 
-                previous_total_sales_amount = pharmacy_sales.filter(created_at__month=(today.month - 1) % 12).aggregate(total=Sum('total_amount'))['total'] or 0
-                sales_growth = ((total_sales_amount - previous_total_sales_amount) / previous_total_sales_amount * 100) if previous_total_sales_amount > 0 else 0
+                previous_period_start = start_date - timedelta(days=(end_date - start_date).days + 1)
+                previous_period_end = start_date - timedelta(days=1)
+                previous_sales_total = Sale.objects.filter(
+                    pharmacy=pharmacy,
+                    created_at__date__range=(previous_period_start, previous_period_end)
+                ).aggregate(total=Sum('total_amount'))['total'] or 0
+                sales_growth = (
+                    ((total_sales_amount - previous_sales_total) / previous_sales_total * 100)
+                    if previous_sales_total > 0 else 0
+                )
+                
+                # forecasted_sales = total_sales_amount * (1 + sales_growth)
+                growth_rate = 0.05
+                today = timezone.now()
+                same_month_last_year_start = today.replace(year=today.year - 1, day=1)
+                same_month_last_year_end = (same_month_last_year_start + timedelta(days=30))
+                last_year_sales_for_same_month = pharmacy_sales.filter(
+                    created_at__gte=same_month_last_year_start,
+                    created_at__lt=same_month_last_year_end
+                ).aggregate(total=Sum('total_amount'))['total'] or 0
 
 
+                forecasted_sales = last_year_sales_for_same_month * (1 + growth_rate)
                 metrics = {
                     'total_sales_count': total_sales_count,
                     'total_sales_amount': f"{total_sales_amount} IQD",
@@ -276,9 +311,10 @@ class AdvancedSalesMetricsView(BasePharmacyView,TemplateView):
                     'pharmacist_sales_data': pharmacist_sales_data_dict,
                     'sales_growth': round(sales_growth, 2),
                 }
-                cache.set(f'{pharmacy_id}-advanced_sales_metrics', metrics, timeout=60*5)
+                cache.set(cache_key, metrics, timeout=60*5)
 
             context["metrics"] = metrics
         else:
             context["metrics"] = False
+        
         return context

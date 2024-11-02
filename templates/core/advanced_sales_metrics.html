@@ -3,15 +3,24 @@
 
 {% block head %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="{% static 'core/css/advanced_sales.css' %}">
 {% endblock head %}
 
 {% block content %}
 <div class="container">
     <h1>Sales Metrics Overview</h1>
-
+    
     {% if metrics %}
-        <!-- Display metrics data if available -->
+        <form method="GET" action="" style="margin-bottom: 20px;">
+            <label for="start_date">Start Date:</label>
+            <input type="text" id="start_date" class="date-picker" name="start_date" value="{{ request.GET.start_date|default:'' }}">
+            
+            <label for="end_date">End Date:</label>
+            <input type="text" id="end_date" class="date-picker" name="end_date" value="{{ request.GET.end_date|default:'' }}">
+
+            <button type="submit" class="btn btn-primary" style="background-color: #1a3a5f; color: #ffffff; border-radius: 5px;">Apply</button>
+        </form>
         <div class="chart-container">
             <div class="col-md-6">
                 <h2>Total Sales Over Time</h2>
@@ -34,6 +43,8 @@
                 <tr><th>Best Selling Product</th><td>{{ metrics.best_selling_product }}</td></tr>
                 <tr><th>Best Selling Product Revenue</th><td>{{ metrics.best_selling_product_revenue }}</td></tr>
                 <tr><th>Sales Growth</th><td>{{ metrics.sales_growth }}%</td></tr>
+                <tr><th>Forecasted Sales</th><td>{{ metrics.forecasted_sales }}</td></tr>
+
             </table>
         </div>
 
@@ -48,7 +59,6 @@
             </ul>
         </div>
     {% else %}
-        <!-- Upgrade message if metrics are unavailable -->
         <div class="upgrade-message" style="text-align: center; margin-top: 50px;">
             <h2 style="color: #f05454;">Upgrade Your Plan to Access Advanced Sales Metrics!</h2>
             <p>Unlock in-depth insights, best-selling product data, and advanced metrics with our advanced plan.</p>
@@ -60,7 +70,6 @@
 {% if metrics %}
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Total Sales Over Time Chart
         const salesCtx = document.getElementById('salesChart').getContext('2d');
         const salesDates = {{ metrics.sales_dates|safe }};
         const salesAmount = {{ metrics.sales_amount_data|safe }};
@@ -97,7 +106,6 @@
             }
         });
 
-        // Best Selling Products Chart
         const bestSellingCtx = document.getElementById('bestSellingProductsChart').getContext('2d');
         const productNames = {{ metrics.best_selling_product_names|safe }};
         const productRevenues = {{ metrics.best_selling_product_revenues|safe }};
@@ -136,4 +144,15 @@
     });
 </script>
 {% endif %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        flatpickr("#start_date", {
+            dateFormat: "Y-m-d",
+        });
+        flatpickr("#end_date", {
+            dateFormat: "Y-m-d",
+        });
+    });
+</script>
 {% endblock %}
