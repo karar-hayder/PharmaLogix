@@ -58,7 +58,6 @@
 {% block scripts %}
 <script>
     const audio = new Audio('{% static "success-sound.mp3" %}');
-    const pharmacyId = "{{ pharmacy.id }}";  
     
     document.getElementById('product-search').focus();
     let debounceTimeout;
