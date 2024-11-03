@@ -81,12 +81,9 @@ class SubscriptionPlan(models.Model):
     @property
     def total_price(self):
         discount_amount = (self.price * self.discount_percentage / 100)
-        discount_amount_overflow =  discount_amount % 250
-        if discount_amount_overflow < 125:
-            normalized_discount_amount = discount_amount - discount_amount_overflow
-        else:
-            normalized_discount_amount = discount_amount + discount_amount_overflow
-        return int(self.price - normalized_discount_amount)
+        discounted_price = self.price - discount_amount
+        normalized_price = ((discounted_price + 125) // 250) * 250
+        return int(normalized_price)
     
 class Subscription(models.Model):
     pharmacy = models.ForeignKey(Pharmacy, on_delete=models.CASCADE, related_name='subscriptions')
