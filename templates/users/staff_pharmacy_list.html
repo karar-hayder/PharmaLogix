@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load permissions %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'users/css/staff_pharmacy_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Pharmacy List</h1>
+    <a href="#">Add New Pharmacy</a>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Plan</th>
+                <th>Duration</th>
+                <th>End Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pharmacy in pharmacies %}
+            <tr>
+                <td>{{ pharmacy.id }}</td>
+                <td>{{ pharmacy.name }}</td>
+                <td>{{ pharmacy.address }}</td>
+                <td>{{ pharmacy.subscription.plan.name }}</td>
+                <td>{{ pharmacy.subscription.plan.duration_days }}</td>
+                <td>{{ pharmacy.subscription.end_date }}</td>
+                <td>
+                    <a href="#">Update Plan</a>
+                    {% if user|has_perm:'users.can_delete_pharmacy' %}
+                        | <a href="#">Delete</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No pharmacies available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">First</a>
+            <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+    
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

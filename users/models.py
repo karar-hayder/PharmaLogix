@@ -15,7 +15,10 @@ class Pharmacy(models.Model):
     name = models.CharField('Name',max_length=255)
     owner = models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
     workers = models.ManyToManyField(User,related_name='pharmacies')
-
+    address = models.TextField(null=True,blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True,null=True)
     def __str__(self):
         return self.name
     

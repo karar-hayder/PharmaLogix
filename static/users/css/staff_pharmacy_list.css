@@ -1,0 +1,96 @@
+/* Variables */
+/* Typography */
+/* Spacing */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  border-radius: 5px;
+  margin-top: 1.5rem;
+  /* Table styles */
+  /* Link styles */
+  /* Actions column */
+}
+.container h1 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #1a3a5f;
+}
+.container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+}
+.container table th, .container table td {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  text-align: left;
+  font-size: 16px;
+}
+.container table th {
+  background-color: #1a3a5f;
+  color: #ffffff;
+  font-weight: bold;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+.container table tr:nth-child(even) {
+  background-color: #f05454;
+  color: #ffffff;
+}
+.container table tr:hover {
+  background-color: #d64545;
+  color: #ffffff;
+}
+.container a {
+  color: #1a73e8;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.container a:hover {
+  color: #1558a5;
+  text-decoration: underline;
+}
+.container .action-links {
+  display: flex;
+  gap: 0.5rem;
+}
+.container .action-links a {
+  padding: 0.5rem 1rem;
+  background-color: #1a73e8;
+  color: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+.container .action-links a:hover {
+  background-color: #1558a5;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+.container .pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+.container .pagination a {
+  background-color: #1a3a5f;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.container .pagination a:hover {
+  background-color: #d64545;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.container .pagination span {
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  color: #2e2e2e;
+}/*# sourceMappingURL=staff_pharmacy_list.css.map */
