@@ -74,8 +74,8 @@ class PharmacyProductModelTest(TestCase):
             product=self.medication, 
             pharmacy=self.pharmacy, 
             supplier=self.supplier,
-            price=2000000,  # Adjusted to thousands
-            supplier_price=1000000,  # Adjusted to thousands
+            price=2000000,
+            supplier_price=1000000,
             expiration_date=timezone.now().date() + timedelta(days=30), 
             stock_level=50
         )
@@ -87,8 +87,8 @@ class PharmacyProductModelTest(TestCase):
             product=self.medication, 
             pharmacy=self.pharmacy, 
             supplier=self.supplier,
-            price=2000000,  # Adjusted to thousands
-            supplier_price=1000000,  # Adjusted to thousands
+            price=2000000,
+            supplier_price=1000000,
             expiration_date=expired_date, 
             stock_level=50
         )
@@ -100,8 +100,8 @@ class PharmacyProductModelTest(TestCase):
             product=self.medication, 
             pharmacy=self.pharmacy, 
             supplier=self.supplier,
-            price=2000000,  # Adjusted to thousands
-            supplier_price=1000000,  # Adjusted to thousands
+            price=2000000,
+            supplier_price=1000000,
             expiration_date=timezone.now().date() + timedelta(days=30), 
             stock_level=50
         )
@@ -110,8 +110,8 @@ class PharmacyProductModelTest(TestCase):
                 product=self.medication, 
                 pharmacy=self.pharmacy, 
                 supplier=self.supplier,
-                price=2000000,  # Adjusted to thousands
-                supplier_price=1000000,  # Adjusted to thousands
+                price=2000000,
+                supplier_price=1000000,
                 expiration_date=timezone.now().date() + timedelta(days=60), 
                 stock_level=50
             )
@@ -126,8 +126,8 @@ class SaleModelTest(TestCase):
         self.pharmacy_product = PharmacyProduct.objects.create(
             product=Product.objects.create(name="Test Product", product_type="medication"),
             pharmacy=self.pharmacy, 
-            price=2000000,  # Adjusted to thousands
-            supplier_price=1000000,  # Adjusted to thousands
+            price=2000000,
+            supplier_price=1000000,
             expiration_date=timezone.now().date() + timedelta(days=60), 
             stock_level=100
         )
@@ -136,9 +136,9 @@ class SaleModelTest(TestCase):
         sale = Sale.objects.create(
             pharmacy=self.pharmacy, 
             pharmacist=self.user, 
-            total_amount=500000,  # Adjusted to thousands
-            discount=50000,  # Adjusted to thousands
-            payment_received=450000  # Adjusted to thousands
+            total_amount=500000,
+            discount=50000,
+            payment_received=450000
         )
         self.assertEqual(str(sale), f"Sale #{sale.id} - 500000 by testuser at {sale.created_at.strftime('%d/%m/%Y, %H:%M:%S')}")
 
@@ -146,30 +146,30 @@ class SaleModelTest(TestCase):
         sale = Sale.objects.create(
             pharmacy=self.pharmacy, 
             pharmacist=self.user, 
-            total_amount=500000,  # Adjusted to thousands
-            discount=50000,  # Adjusted to thousands
-            payment_received=450000  # Adjusted to thousands
+            total_amount=500000,
+            discount=50000,
+            payment_received=450000
         )
         sale_item = SaleItem.objects.create(
             sale=sale, 
             product=self.pharmacy_product, 
             quantity=5, 
-            price=100000  # Adjusted to thousands
+            price=100000
         )
-        self.assertEqual(sale_item.total_price, 500000)  # 5 * 100000
+        self.assertEqual(sale_item.total_price, 500000)
 
     def test_sale_item_quantity(self):
         sale = Sale.objects.create(
             pharmacy=self.pharmacy, 
             pharmacist=self.user, 
-            total_amount=500000,  # Adjusted to thousands
-            discount=50000,  # Adjusted to thousands
-            payment_received=450000  # Adjusted to thousands
+            total_amount=500000,
+            discount=50000,
+            payment_received=450000
         )
         sale_item = SaleItem.objects.create(
             sale=sale, 
             product=self.pharmacy_product, 
             quantity=3, 
-            price=100000  # Adjusted to thousands
+            price=100000
         )
-        self.assertEqual(sale_item.total_price, 300000)  # 3 * 100000
+        self.assertEqual(sale_item.total_price, 300000)
