@@ -161,6 +161,8 @@ class InventoryView(BasePharmacyView, TemplateView):
             context['has_basic_inventory_audit'] = True
             context['today'] = timezone.now().date()
             context['soon'] = timezone.now().date() + timedelta(days=30)
+            if pharmacy.has_feature("advnaced_inventory_audit"):
+                context['has_advanced_inventory_audit'] = True
         context['products'] = kwargs.get('page_obj')
         return context
         

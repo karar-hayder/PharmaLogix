@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.utils import timezone
 from django.db.models import UniqueConstraint
+from datetime import timedelta
+from django.core.cache import cache
 # Create your models here.
 
 DOSAGE_FORMS = [
@@ -84,6 +86,25 @@ class PharmacyProduct(models.Model):
         if self.expiration_date and self.expiration_date < timezone.now().date():
             raise ValidationError('Expiration date cannot be in the past.')
 
+    def calculate_sales_rate(self):
+        # Calculate average daily sales rate based on past sales data for this product.
+        key = f"{self.pk}-{self.pharmacy.pk}-{self.product.name}-daily-sales-rate"
+        daily_sales_rate = cache.get(key)
+        if not daily_sales_rate:
+            recent_sales = SaleItem.objects.filter(
+                product=self, sale__created_at__gte=timezone.now() - timedelta(days=30)
+            )
+            total_units_sold = sum(item.quantity for item in recent_sales)
+            daily_sales_rate = total_units_sold / 30 if total_units_sold > 0 else 0
+            cache.set(key,daily_sales_rate,60*30)
+        return round(daily_sales_rate,3)
+
+    def predicted_restock_date(self):
+        daily_sales_rate = self.calculate_sales_rate()
+        if daily_sales_rate > 0:
+            days_until_out_of_stock = self.stock_level / daily_sales_rate
+            return timezone.now().date() + timedelta(days=days_until_out_of_stock)
+        return None
 class Sale(models.Model):
     pharmacy = models.ForeignKey(Pharmacy, on_delete=models.CASCADE,related_name='sales')
     pharmacist = models.ForeignKey(User, on_delete=models.CASCADE)

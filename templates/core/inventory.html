@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
+{% load math_filters %}
+
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'core/css/inventory.css' %}">
@@ -35,6 +37,11 @@
                     {% endif %}
                     <th>Price</th>
                     <th>Stock Level</th>
+                    {% if has_advanced_inventory_audit %}
+                        <th>Price Variance (%)</th>
+                        <th>Average Daily Sales</th>
+                        <th>Predicted Restock Date</th>
+                    {% endif %}
                     <th>Expiration Date</th>
                     <th>Actions</th>
                 </tr>
@@ -59,6 +66,29 @@
                             {% if has_basic_inventory_audit %}{% if product.stock_level < 10 %}low-stock{% elif product.stock_level <= 20 %}medium-stock{% else %}high-stock{% endif %}{% endif %}">
                             {{ product.stock_level }}
                         </td>
+                        {% if has_advanced_inventory_audit %}
+                            <td>
+                                {% if product.supplier_price %}
+                                    {% with price_variance=product.price|subtract:product.supplier_price %}
+                                        {% if price_variance %}
+                                            {{ price_variance|divide:product.supplier_price|multiply:100|floatformat:1 }}%
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    {% endwith %}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>{{ product.calculate_sales_rate }}</td>
+                            <td>
+                                {% if product.stock_level <= 20 %}
+                                    {{ product.predicted_restock_date|default:"N/A" }}
+                                {% else %}
+                                    Sufficient Stock
+                                {% endif %}
+                            </td>
+                        {% endif %}
                         <td class="expiration-date 
                             {% if has_basic_inventory_audit %}{% if product.expiration_date < today %}expired{% elif product.expiration_date < soon %}expiring-soon{% endif %}{% endif %}">
                             {{ product.expiration_date }}
