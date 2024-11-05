@@ -62,7 +62,13 @@
         <strong>No Sales Metrics:</strong> There are currently no sales metrics available.
     </div>
     {% endif %}
-    <h1>Sales Records</h1>
+    <form method="get">
+        <label for="date">Select Date:</label>
+        <input type="date" name="date" id="date" value="{{ selected_date }}">
+        <button type="submit">Filter</button>
+    </form>
+    
+    <h1>Sales Records for {{ selected_date }}</h1>
     
     {% if sales %}
         <table class="sales-table">

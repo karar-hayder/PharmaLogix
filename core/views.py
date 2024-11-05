@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from rest_framework import status
 from .serializers import MedicationSerializer
-import json
+from datetime import datetime
 from django.core.cache import cache
 from django.contrib import messages
 from django.urls import reverse_lazy
@@ -73,36 +73,64 @@ class PharmacistProductAdd(BasePharmacyView,TemplateView):
         context["suppliers"] = pharmacy.suppliers.all()
         return context
     
-class SalesListView(BasePharmacyView,ListView):
+class SalesListView(BasePharmacyView, ListView):
     model = Sale
     template_name = 'core/sale_list.html'
     context_object_name = 'sales'
     
     def get_queryset(self):
         pharmacy = self.get_pharmacy()
-        query = cache.get('sales_metrics')
-        query = self.model.objects.filter(pharmacy=pharmacy).order_by('-created_at')
-        return query
+        selected_date = self.request.GET.get('date', timezone.localdate())
+        
+        if isinstance(selected_date, str):
+            try:
+                selected_date = datetime.strptime(selected_date, "%Y-%m-%d").date()
+            except ValueError:
+                selected_date = timezone.localdate()
+        
+        cache_key = f"{pharmacy.id}-sales_query-{selected_date}"
+        queryset = cache.get(cache_key)
+        if not queryset:
+            queryset = self.model.objects.filter(
+                pharmacy=pharmacy,
+                created_at__date=selected_date
+            ).order_by('-created_at')
+            cache.set(cache_key, queryset, timeout=60 * 5)
+        
+        return queryset
 
-    def get_context_data(self, **kwargs) -> dict[str, Any]:
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        pharmacy_id = self.kwargs.get('pharmacy_id')    
         pharmacy = self.get_pharmacy()
-
+        pharmacy_id = self.kwargs.get('pharmacy_id')
+        
+        selected_date = self.request.GET.get('date', timezone.localdate())
+        if isinstance(selected_date, str):
+            try:
+                selected_date = datetime.strptime(selected_date, "%Y-%m-%d").date()
+            except ValueError:
+                selected_date = timezone.localdate()
+        
+        context['selected_date'] = selected_date
+        
         if pharmacy.has_feature('basic_selling_metrics'):
-            metrics = cache.get(f'{pharmacy_id}-sales_metrics')
+            cache_key = f"{pharmacy_id}-sales_metrics-{selected_date}"
+            metrics = cache.get(cache_key)
             if not metrics:
-                pharmacy_sales = self.model.objects.filter(pharmacy=pharmacy)
-                total_sales_count = pharmacy_sales.count()
-                total_sales_amount = pharmacy_sales.aggregate(total=models.Sum('total_amount'))['total'] or 0
-                total_discount = pharmacy_sales.aggregate(total=models.Sum('discount'))['total'] or 0
-                total_payment_received = pharmacy_sales.aggregate(total=models.Sum('payment_received'))['total'] or 0
-
-                average_sale_amount = round((total_sales_amount / total_sales_count if total_sales_count > 0 else 0),3)
+                daily_sales = self.model.objects.filter(
+                    pharmacy=pharmacy,
+                    created_at__date=selected_date
+                )
+                total_sales_count = daily_sales.count()
+                total_sales_amount = daily_sales.aggregate(total=Sum('total_amount'))['total'] or 0
+                total_discount = daily_sales.aggregate(total=Sum('discount'))['total'] or 0
+                total_payment_received = daily_sales.aggregate(total=Sum('payment_received'))['total'] or 0
+                average_sale_amount = round((total_sales_amount / total_sales_count if total_sales_count > 0 else 0), 3)
 
                 best_selling_product_item = (
-                    SaleItem.objects.filter(sale__pharmacy=pharmacy).values('product__product__name')
-                    .annotate(total_sales=models.Sum('price'))
+                    SaleItem.objects.filter(sale__pharmacy=pharmacy, sale__created_at__date=selected_date)
+                    .values('product__product__name')
+                    .annotate(total_sales=Sum('price'))
                     .order_by('-total_sales')
                     .first()
                 )
@@ -119,12 +147,15 @@ class SalesListView(BasePharmacyView,ListView):
                     'best_selling_product_revenue': best_selling_product_revenue,
                 }
 
-                cache.set(f'{pharmacy_id}-sales_metrics', metrics, timeout=60*5)
-            context["metrics"] = metrics
+                cache.set(cache_key, metrics, timeout=60 * 5)
+            print(metrics)
+            
+            context['metrics'] = metrics
             context['has_metrics_feature'] = True
             context['has_advanced_metrics'] = pharmacy.has_feature('advanced_selling_metrics')
         else:
-            context["metrics"] = True
+            context['metrics'] = None
+        
         return context
     
 class SupplierCreateView(BasePharmacyView, CreateView):
