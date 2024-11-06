@@ -1,21 +1,17 @@
 from typing import Any
 from django.utils import timezone
 from datetime import timedelta
-from django.db.models.query import QuerySet
 from django.shortcuts import render
-from django.views.generic import TemplateView, UpdateView, ListView, CreateView, View
+from django.views.generic import TemplateView, ListView, CreateView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
-from .models import Pharmacy, Medication, Sale, SaleItem, models, DOSAGE_FORMS, Supplier, PharmacyProduct
+from .models import Pharmacy, Sale, SaleItem, DOSAGE_FORMS, Supplier, PharmacyProduct
 from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from rest_framework import status
-from .serializers import MedicationSerializer
 from datetime import datetime
 from django.core.cache import cache
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.db.models import Sum, Avg
+from django.db.models import Sum
 from .extras import hash_key
 # Create your views here.
 

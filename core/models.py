@@ -3,7 +3,6 @@ from users.models import Pharmacy, Supplier, User
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.utils import timezone
-from django.db.models import UniqueConstraint
 from datetime import timedelta
 from django.core.cache import cache
 from .extras import hash_key

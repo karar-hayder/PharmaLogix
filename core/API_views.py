@@ -1,14 +1,12 @@
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.request import Request
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.utils import timezone
 
 from .extras import hash_key
 from .models import Medication, Cosmetic, Pharmacy, Product, PharmacyProduct, Sale, SaleItem, Supplier

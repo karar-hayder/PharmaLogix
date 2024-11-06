@@ -3,9 +3,7 @@ from django.contrib.auth.models import User
 from datetime import timedelta
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
 from django.utils import timezone
-from django.db.models import UniqueConstraint
 from django.core.cache import cache
 # Create your models here.
 

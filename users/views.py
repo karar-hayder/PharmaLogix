@@ -1,8 +1,6 @@
-from django.shortcuts import render
-from django.views.generic import TemplateView, UpdateView, ListView, CreateView, View
+from django.views.generic import ListView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
-from django.urls import reverse_lazy
 from django.core.cache import cache
 
 from .models import Pharmacy
