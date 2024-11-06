@@ -16,6 +16,7 @@ from django.core.cache import cache
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.db.models import Sum, Avg
+from .extras import hash_key
 # Create your views here.
 
 class BasePharmacyView(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -88,7 +89,7 @@ class SalesListView(BasePharmacyView, ListView):
             except ValueError:
                 selected_date = timezone.localdate()
         
-        cache_key = f"{pharmacy.id}-sales_query-{selected_date}"
+        cache_key = hash_key(f"{pharmacy.id}-sales_query-{selected_date}")
         queryset = cache.get(cache_key)
         if not queryset:
             queryset = self.model.objects.filter(
@@ -114,7 +115,7 @@ class SalesListView(BasePharmacyView, ListView):
         context['selected_date'] = selected_date
         
         if pharmacy.has_feature('basic_selling_metrics'):
-            cache_key = f"{pharmacy_id}-sales_metrics-{selected_date}"
+            cache_key = hash_key(f"{pharmacy_id}-sales_metrics-{selected_date}")
             metrics = cache.get(cache_key)
             if not metrics:
                 daily_sales = self.model.objects.filter(
@@ -148,7 +149,6 @@ class SalesListView(BasePharmacyView, ListView):
                 }
 
                 cache.set(cache_key, metrics, timeout=60 * 5)
-            print(metrics)
             
             context['metrics'] = metrics
             context['has_metrics_feature'] = True
@@ -248,7 +248,7 @@ class AdvancedSalesMetricsView(BasePharmacyView, TemplateView):
             else:
                 end_date = timezone.now().date()
 
-            cache_key = f'{pharmacy_id}-advanced_sales_metrics-{start_date}-{end_date}'
+            cache_key = hash_key(f'{pharmacy_id}-advanced_sales_metrics-{start_date}-{end_date}')
             metrics = cache.get(cache_key)
             if not metrics:
                 pharmacy_sales = Sale.objects.filter(

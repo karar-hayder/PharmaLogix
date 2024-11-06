@@ -10,6 +10,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
+from .extras import hash_key
 from .models import Medication, Cosmetic, Pharmacy, Product, PharmacyProduct, Sale, SaleItem, Supplier
 from .serializers import MedicationSerializer, CosmeticSerializer, ProductSerializer, PharmacyProductSerializer, SaleSerializer
 
@@ -288,7 +289,7 @@ class PharmacyProductSearchAPIView(APIView):
 
         if barcode and len(barcode.strip()) >= 10:
             barcode = barcode.strip()
-            cache_key = f'products_barcode_{barcode}'
+            cache_key = hash_key(f'{pharmacy_id}_products_barcode_{barcode}')
             products = cache.get(cache_key, [])
 
             if not products:

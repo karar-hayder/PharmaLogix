@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.db.models import UniqueConstraint
 from datetime import timedelta
 from django.core.cache import cache
+from .extras import hash_key
 # Create your models here.
 
 DOSAGE_FORMS = [
@@ -88,7 +89,7 @@ class PharmacyProduct(models.Model):
 
     def calculate_sales_rate(self):
         # Calculate average daily sales rate based on past sales data for this product.
-        key = f"{self.pk}-{self.pharmacy.pk}-{self.product.name}-daily-sales-rate"
+        key = hash_key(f"{self.pk}-{self.pharmacy.pk}-{self.product.name}-daily-sales-rate")
         daily_sales_rate = cache.get(key)
         if not daily_sales_rate:
             recent_sales = SaleItem.objects.filter(
