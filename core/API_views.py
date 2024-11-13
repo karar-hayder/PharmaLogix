@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.core.cache import cache
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 
 from .extras import hash_key
 from .models import Medication, Cosmetic, Pharmacy, Product, PharmacyProduct, Sale, SaleItem, Supplier
@@ -117,8 +117,22 @@ class PharmacyProductViewSet(viewsets.ModelViewSet):
 
     def get_object(self):
         obj = super().get_object()
-        if not self.request.user.is_superuser and obj.pharmacy in self.request.user.pharmacies:
-            raise PermissionDenied()
+        pharmacy = obj.pharmacy
+        cache_key = f"{self.request.user.id}--{pharmacy.id}--has_perm"
+        check = cache.get(cache_key)
+        if check is None:
+            if self.request.user.is_superuser or (
+                pharmacy.owner == self.request.user or self.request.user in pharmacy.workers.all()
+            ):
+                check = True
+            else:
+                check = False
+
+            cache.set(cache_key, check, timeout=600)
+
+        if not check:
+            raise PermissionDenied("You do not have permission to view this product.")
+
         return obj
 
     def create(self, request, *args, **kwargs):
