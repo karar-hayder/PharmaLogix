@@ -32,7 +32,7 @@
                 <td>{{ pharmacy.subscription.plan.duration_days }}</td>
                 <td>{{ pharmacy.subscription.end_date }}</td>
                 <td>
-                    <a href="#">Update Plan</a>
+                    <a href="{% url "Staff pharmacies subscribe" pharmacy.id %}">Update Plan</a>
                     {% if user|has_perm:'users.can_delete_pharmacy' %}
                         | <a href="#">Delete</a>
                     {% endif %}

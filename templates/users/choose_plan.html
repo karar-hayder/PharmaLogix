@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+<title>Choose Subscription Plan</title>
+<link rel="stylesheet" href="{% static 'users/css/choose_plan.css' %}">
+{% endblock head %}
+
+{% block content %}
+<div class="choose-plan-container">
+    <h1>Choose Your Subscription Plan</h1>
+    <div class="plans-grid">
+        {% for plan in plans %}
+        <div class="plan-card {% if plan.featured %}featured-plan{% endif %}">
+            <div class="plan-header">
+                <h2>{{ plan.name }}</h2>
+                {% if plan.featured %}
+                <span class="badge">Most Popular</span>
+                {% endif %}
+            </div>
+            <p class="plan-price">{{ plan.total_price }} IQD</p>
+            <p class="plan-duration">{{ plan.duration_days }} days</p>
+            
+            <div class="plan-features">
+                <h4>Features Included:</h4>
+                <ul>
+                    {% for feature in plan.features.all %}
+                    <li>{{ feature.name }}</li>
+                    {% empty %}
+                    <li>No additional features.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            {% if plan.discount_percentage > 0 %}
+            <div class="plan-discount">
+                <p><strong>Discount:</strong> {{ plan.discount_percentage }}% off</p>
+            </div>
+            {% endif %}
+            
+            <p class="plan-description">{{ plan.description }}</p>
+
+            <!-- Form Submission for Choosing Plan -->
+            <form method="post" action="">
+                {% csrf_token %}
+                <input type="hidden" name="plan_id" value="{{ plan.id }}">
+                <button type="submit" class="btn btn-primary">Choose {{ plan.name }}</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}
