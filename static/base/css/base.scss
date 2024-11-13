@@ -144,3 +144,52 @@ a {
         color: $link-hover-color;
     }
 }
+
+.messages {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    max-width: 300px;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.5s ease-out;
+}
+
+.alert {
+    padding: 10px 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    background-color: #f8d7da;
+    color: #721c24;
+    font-weight: bold;
+    transition: transform 0.3s ease, opacity 0.5s ease-out;
+}
+
+.show-message {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.alert.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert.warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.alert.info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.alert.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}

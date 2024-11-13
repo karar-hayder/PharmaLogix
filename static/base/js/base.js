@@ -12,3 +12,12 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+document.addEventListener("DOMContentLoaded", function() {
+    const messages = document.querySelector('.messages');
+    if (messages) {
+        messages.classList.add('show-message');
+        setTimeout(function() {
+            messages.classList.remove('show-message');
+        }, 4000);
+    }
+});
