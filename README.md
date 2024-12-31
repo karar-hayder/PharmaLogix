@@ -2,6 +2,8 @@
 
 PharmaLogix is a comprehensive web application designed with Django to streamline and enhance the management of pharmaceutical logistics.
 
+**Note: This project is in need of futher development and not yet finished.**
+
 ## Key Features
 
 - **Inventory Management**: Efficiently track and manage your pharmaceutical inventory.
