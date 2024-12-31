@@ -100,4 +100,4 @@ This project is proprietary. All rights to the code are reserved. You must obtai
 
 ## Contact
 
-For any inquiries, please reach out to [Karar Haider](mailto:kararhaider.pro@gmail.com).
+For any inquiries, please reach out to Karar Haider [kararhaider.pro@gmail.com](mailto:kararhaider.pro@gmail.com).
